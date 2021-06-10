@@ -1,0 +1,31 @@
+---
+network_nodes:
+  - 
+    name: "vmx"
+    reImagePath: "/home/aprabh/vmx"
+    pfeImagePath: "/home/aprabh/vmx/pfe"
+    numIntf: 5
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 2048
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "vqfx1"
+        intf: "ge-0.0.0-vmx1"
+        peerintf: "ge-0.0.0-vqfx1"
+      - name: "vqfx1_vmx2"
+        intf: "ge-0.0.0-vmx2"
+        peerintf: "ge-0.0.0-vqfx1"
+
+  -
+    name: "vqfx2"
+    reImagePath: "/home/aprabh/vqfx"
+    pfeImagePath: "/home/aprabh/vqfx"
+    numIntf: 5
+    re_memory: 1024
+    pfe_memory: 2048
+    vnfType: "vqfx"
+    link:
+      - name: "vqfx1_vmx1"
+        intf: "ge-0.0.0-vqfx1"
+        peerintf: "ge-0.0.0-vmx1"

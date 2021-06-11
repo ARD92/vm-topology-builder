@@ -403,6 +403,7 @@ func main() {
             fmt.Printf("Creating bridges\n")
             //Parse through yaml and create all bridges needed to define topology
             CreateBridges(nodes)
+            //copy original image to build directory and refer that xml
             //Genxml(nodes)
         } else if os.Args[1] == "delete" {
             fmt.Printf("Deleting bridges\n")
@@ -410,6 +411,26 @@ func main() {
         } else if os.Args[1] == "genxml" {
             fmt.Printf(" Generating xml files..  \n")
             Genxml(nodes)
+        } else if os.Args[1] == "help" {
+            fmt.Printf(` 
+            -------------- VM Topology Builder V1.0 --------------------------------------------
+            Topology builder for Juniper VNFs such as vMX, vQFX and vSRX 
+            This is used for functional testing only and is virtio based. 
+            The topology will be spun up on the same compute
+            The topology is defined in a yaml file. Example topologies are placed
+            under ./topologies path
+
+            genxml: generates xml for the topology defined and stores it under templates directory
+            with the topology name
+            create: creates the topology
+            delete: deletes the topology
+
+            To use this below is the usage. 
+            ./vm-topo create topology.yaml
+            ./vm-topo delete topology.yaml
+            ./vm-topo genxml topology.yaml
+            ----------------------------------------------------------------------------------------`)
+            fmt.Printf("\n")
         } else {
             fmt.Printf(" Unknown first argument. Please check \n")
         }

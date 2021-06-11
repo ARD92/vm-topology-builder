@@ -8,12 +8,14 @@ network_nodes:
     vnfType: "vmx"
     re_memory: 1024
     pfe_memory: 2048
+    re_cores: 1
+    pfe_cores: 1
     link: 
       # name is user defined. This will be used to create the bridge name
-      - name: "vqfx1"
+      - name: "test1_test2"
         intf: "ge-0.0.0-vmx1"
         peerintf: "ge-0.0.0-vqfx1"
-      - name: "vqfx1_vmx2"
+      - name: "test1_test22"
         intf: "ge-0.0.0-vmx2"
         peerintf: "ge-0.0.0-vqfx1"
 
@@ -25,7 +27,9 @@ network_nodes:
     re_memory: 1024
     pfe_memory: 2048
     vnfType: "vqfx"
+    re_cores: 1
+    pfe_cores: 4
     link:
-      - name: "vqfx1_vmx1"
+      - name: "test1_test2"
         intf: "ge-0.0.0-vqfx1"
         peerintf: "ge-0.0.0-vmx1"

@@ -1,7 +1,7 @@
 ---
 network_nodes:
   - 
-    name: "vqfx1"
+    name: "vqfx7"
     reImagePath: "/home/aprabh/vmx"
     pfeImagePath: "/home/aprabh/vmx/pfe"
     numIntf: 5
@@ -17,14 +17,14 @@ network_nodes:
     link: 
       # name is user defined. This will be used to create the bridge name
       - name: "test1_test2"
-        intf: "ge-0.0.0-vqfx1"
-        peerintf: "ge-0.0.0-vqfx2"
+        intf: "ge-0.0.0-vqfx7"
+        peerintf: "ge-0.0.0-vqfx8"
       - name: "test1_test22"
-        intf: "ge-0.0.1-vqfx1"
-        peerintf: "ge-0.0.1-vqfx2"
+        intf: "ge-0.0.1-vqfx7"
+        peerintf: "ge-0.0.1-vqfx8"
 
   -
-    name: "vqfx2"
+    name: "vqfx8"
     reImagePath: "/home/aprabh/vqfx"
     pfeImagePath: "/home/aprabh/vqfx"
     numIntf: 5
@@ -39,8 +39,8 @@ network_nodes:
     pfe_port: 8711
     link:
       - name: "test1_test2"
-        intf: "ge-0.0.0-vqfx2"
-        peerintf: "ge-0.0.0-vqfx1"
+        intf: "ge-0.0.0-vqfx8"
+        peerintf: "ge-0.0.0-vqfx7"
       - name: "test1_test22"
-        intf: "ge-0.0.1-vqfx2"
-        peerintf: "ge-0.0.1-vqfx1"
+        intf: "ge-0.0.1-vqfx8"
+        peerintf: "ge-0.0.1-vqfx7"

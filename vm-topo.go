@@ -8,6 +8,11 @@ export GO111MODULE=off
 
 +++++++ Usage ++++++++
 ./vm-topo-builder -action <create/delete/genxml> -t <topology.yml>
+
+To do:
+1. use libvirt-go bindings to start the created domain
+2. copy the image into build directory and mark that as source path 
+3. complete template for vMX and vSRX
 */
 
 package main
@@ -88,13 +93,62 @@ func Readtemplate(file string) string {
 
 
 /* Func create brdges 
-- Create bridges based on link names 
+- Create bridges based on link names and vNF type 
 - Place the interfaces into the bridges. i.e. while generating XML templates 
   load these as target bridges 
 */
 
 func CreateBridges(node Nodes) {
     for i:=0; i<len(node.Network_nodes); i++ {
+        if node.Network_nodes[i].VnfType == "vqfx" {
+            fmt.Printf("Entering vqfx creating bridges\n")
+            qattr_int := netlink.NewLinkAttrs()
+            qattr_ext := netlink.NewLinkAttrs()
+            qattr_res := netlink.NewLinkAttrs()
+            qattr_int.Name = node.Network_nodes[i].Name+"_int"
+            qattr_ext.Name = node.Network_nodes[i].Name+"_ext"
+            qattr_res.Name = node.Network_nodes[i].Name+"_res"
+            qattr_int.MTU = 9000
+            qattr_ext.MTU = 9000
+            qattr_res.MTU =9000
+            qbattr_int := &netlink.Bridge{LinkAttrs: qattr_int}
+            qbattr_ext := &netlink.Bridge{LinkAttrs: qattr_ext}
+            qbattr_res := &netlink.Bridge{LinkAttrs: qattr_res}
+            fmt.Printf("%v\n",qbattr_int)
+            fmt.Printf("%v\n",qbattr_ext)
+            fmt.Printf("%v\n",qbattr_res)
+
+            err_int := netlink.LinkAdd(qbattr_int)
+            if err_int != nil {
+                fmt.Printf("Bridge %s not added: %v\n", qattr_int.Name, err_int)
+            }
+            err_ext := netlink.LinkAdd(qbattr_ext)
+            if err_ext !=nil {
+                fmt.Printf("Bridge %s not added: %v\n", qattr_ext.Name, err_ext)
+            }
+            err_res := netlink.LinkAdd(qbattr_res)
+            if err_res !=nil {
+                fmt.Printf("Bridge %s not added: %v\n", qattr_res.Name, err_res)
+            }
+
+            qsattr_int,_ := netlink.LinkByName(qattr_int.Name)
+            if serr := netlink.LinkSetUp(qsattr_int); serr != nil {
+                fmt.Printf("Bridge not up: %v\n",serr)
+            }
+            qsattr_ext,_ := netlink.LinkByName(qattr_ext.Name)
+            if serr := netlink.LinkSetUp(qsattr_ext); serr != nil {
+                fmt.Printf("Bridge not up: %v\n",serr)
+            }
+            qsattr_res,_ := netlink.LinkByName(qattr_res.Name)
+            if serr := netlink.LinkSetUp(qsattr_res); serr != nil {
+                fmt.Printf("Bridge not up: %v\n",serr)
+            }
+
+        } else if node.Network_nodes[i].VnfType == "vmx" {
+            fmt.Print("Creating int and ext bridges for VMX [WIP]\n")
+        } else if node.Network_nodes[i].VnfType == "vsrx" {
+            fmt.Print("Creating int and ext bridges for VSRX [WIP]\n")
+        }
         for j:=0; j<len(node.Network_nodes[i].Links); j++ {
             //fmt.Printf("+v\n", node.Network_nodes[i].Links)
             linkattr := netlink.NewLinkAttrs() 
@@ -118,6 +172,57 @@ func CreateBridges(node Nodes) {
 /* Function to delete bridges when deleting the topology */
 func DeleteBridges(node Nodes) {
     for i:=0; i<len(node.Network_nodes); i++ {
+        if node.Network_nodes[i].VnfType == "vqfx" {
+            qattr_int := netlink.NewLinkAttrs()
+            qattr_ext := netlink.NewLinkAttrs()
+            qattr_res := netlink.NewLinkAttrs()
+            qattr_int.Name = node.Network_nodes[i].Name+"_int"
+            qattr_ext.Name = node.Network_nodes[i].Name+"_ext"
+            qattr_res.Name = node.Network_nodes[i].Name+"_res"
+            qbattr_int := &netlink.Bridge {LinkAttrs: qattr_int}
+            qbattr_ext := &netlink.Bridge {LinkAttrs: qattr_ext}
+            qbattr_res := &netlink.Bridge {LinkAttrs: qattr_res}
+
+            qsattr_int,serr := netlink.LinkByName(qattr_int.Name)
+            if serr != nil {
+                fmt.Printf("Link not found")
+            }
+            if serr := netlink.LinkSetDown(qsattr_int); serr !=nil {
+                fmt.Printf("Link not present %s", serr)
+            }
+            errint := netlink.LinkDel(qbattr_int)
+            if errint != nil {
+                fmt.Print("Bridge %s not deleted",qattr_int.Name)
+            }
+
+            qsattr_ext,serr := netlink.LinkByName(qattr_ext.Name)
+            if serr != nil {
+                fmt.Printf("Link not found")
+            }
+            if serr := netlink.LinkSetDown(qsattr_ext); serr !=nil {
+                fmt.Printf("Link not present %s", serr)
+            }
+            errext := netlink.LinkDel(qbattr_ext)
+            if errext != nil {
+                fmt.Print("Bridge %s not deleted",qattr_ext.Name)
+            }
+
+            qsattr_res,serr := netlink.LinkByName(qattr_res.Name)
+            if serr != nil {
+                fmt.Printf("Link not found")
+            }
+            if serr := netlink.LinkSetDown(qsattr_res); serr !=nil {
+                fmt.Printf("Link not present %s", serr)
+            }
+            errres := netlink.LinkDel(qbattr_res)
+            if errres != nil {
+                fmt.Print("Bridge %s not deleted",qattr_res.Name)
+            }
+        } else if node.Network_nodes[i].VnfType == "vmx" {
+            fmt.Printf("Deleting vmx int and vmx ext bridges [WIP]\n")
+        } else if node.Network_nodes[i].VnfType == "vsrx" {
+            fmt.Printf("Deleting vsrx int and ext bridges [WIP]\n")
+        }
         for j:=0; j<len(node.Network_nodes[i].Links); j++ {
             linkattr := netlink.NewLinkAttrs()
             linkattr.Name = node.Network_nodes[i].Links[j].Name
@@ -409,12 +514,12 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
                      pcislot uint, pcifunc uint, pcimultifunc string,
                     ) libvirtxml.DomainController {
     */
-    c1 := NewController("usb",uint(0),"ich9-ehci1","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x7),"")
-    c2 := NewController("usb",uint(0),"ich9-uhci1","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x0),"on")
-    c3 := NewController("usb",uint(0),"ich9-ehci2","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x0b),"")
-    c4 := NewController("usb",uint(0),"ich9-ehci3","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x0b),"")
+    c1 := NewController("usb",uint(0),"ich9-ehci1","usb",uint(0x0000),uint(0x00),uint(0x01),uint(0x1),"")
+    c2 := NewController("usb",uint(0),"ich9-uhci1","usb",uint(0x0000),uint(0x00),uint(0x02),uint(0x2),"on")
+    c3 := NewController("usb",uint(0),"ich9-uhci2","usb",uint(0x0000),uint(0x00),uint(0x03),uint(0x2),"")
+    c4 := NewController("usb",uint(0),"ich9-uhci3","usb",uint(0x0000),uint(0x00),uint(0x04),uint(0x4),"")
     c5 := NewController("pci",uint(0),"pci-root","pci.0",nint,nint,nint,nint,"") 
-    c6 := NewController("ide",uint(0),"","ide",uint(0x0000),uint(0x00),uint(0x01),uint(0x0),"")
+    c6 := NewController("ide",uint(0),"","ide",uint(0x0000),uint(0x00),uint(0x05),uint(0x5),"")
     c7 := NewController("virtio-serial",uint(0),"","virtio-serial0",uint(0x0000),uint(0x00),uint(0x0a),uint(0x0),"")
 
     /* Reference for serial function params

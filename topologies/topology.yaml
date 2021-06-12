@@ -1,23 +1,27 @@
 ---
 network_nodes:
   - 
-    name: "vmx"
+    name: "vqfx1"
     reImagePath: "/home/aprabh/vmx"
     pfeImagePath: "/home/aprabh/vmx/pfe"
     numIntf: 5
-    vnfType: "vmx"
+    vnfType: "vqfx"
     re_memory: 1024
     pfe_memory: 2048
     re_cores: 1
     pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8610
+    pfe_port: 8710
     link: 
       # name is user defined. This will be used to create the bridge name
       - name: "test1_test2"
-        intf: "ge-0.0.0-vmx1"
-        peerintf: "ge-0.0.0-vqfx1"
+        intf: "ge-0.0.0-vqfx1"
+        peerintf: "ge-0.0.0-vqfx2"
       - name: "test1_test22"
-        intf: "ge-0.0.0-vmx2"
-        peerintf: "ge-0.0.0-vqfx1"
+        intf: "ge-0.0.1-vqfx1"
+        peerintf: "ge-0.0.1-vqfx2"
 
   -
     name: "vqfx2"
@@ -28,8 +32,15 @@ network_nodes:
     pfe_memory: 2048
     vnfType: "vqfx"
     re_cores: 1
-    pfe_cores: 4
+    pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8611
+    pfe_port: 8711
     link:
       - name: "test1_test2"
-        intf: "ge-0.0.0-vqfx1"
-        peerintf: "ge-0.0.0-vmx1"
+        intf: "ge-0.0.0-vqfx2"
+        peerintf: "ge-0.0.0-vqfx1"
+      - name: "test1_test22"
+        intf: "ge-0.0.1-vqfx2"
+        peerintf: "ge-0.0.1-vqfx1"

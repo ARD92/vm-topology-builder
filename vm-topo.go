@@ -7,7 +7,7 @@ The below may be required. if not, packages arent downloaded into go container.
 export GO111MODULE=off
 
 +++++++ Usage ++++++++
-./vm-topo-builder -action <create/delete> -t <topology.yml>
+./vm-topo-builder -action <create/delete/genxml> -t <topology.yml>
 */
 
 package main
@@ -17,6 +17,7 @@ import (
     "log"
     "io/ioutil"
     "os"
+    "strings"
     //"strconv"
     //"encoding/xml"
     "gopkg.in/yaml.v3"
@@ -27,6 +28,22 @@ import (
     //"./templates/vsrx"
     //"./templates/vmx"
 )
+
+/* Global variable definition */
+var BASE_VMX_LINK_MAC_ADDRESS string = "02:aa:01:10:00:00"
+var BASE_VMX_INT_MAC_ADDRESS string = "02:aa:01:11:00:00"
+var BASE_VMX_EXT_MAC_ADDRESS string = "02:aa:01:12:00:00"
+
+var BASE_VQFX_LINK_MAC_ADDRESS string = "02:aa:01:20:00:00"
+var BASE_VQFX_INT_MAC_ADDRESS string = "02:aa:01:21:00:00"
+var BASE_VQFX_EXT_MAC_ADDRESS string = "02:aa:01:22:00:00"
+var BASE_VQFX_RES_MAC_ADDRESS string = "02:aa:01:23:00:00"
+
+var BASE_VSRX_LINK_MAC_ADDRESS string = "02:aa:01:30:00:00"
+var BASE_VSRX_INT_MAC_ADDRESS string = "02:aa:01:30:00:00"
+var BASE_VSRX_EXT_MAC_ADDRESS string = "02:aa:01:31:00:00"
+
+const LISTEN_ADDRESS string = "127.0.0.1"
 
 /*
 Struct to parse input yaml file
@@ -45,8 +62,12 @@ type Node struct {
     VnfType string `yaml:"vnfType"`
     Re_memory uint `yaml:"re_memory"`
     Pfe_memory uint `yaml:"pfe_memory"`
-    Re_Cores int `yaml:re_cores"`
+    Re_Cores  int `yaml:re_cores"`
     Pfe_Cores int `yaml:pfe_cores"`
+    Re_port string `yaml:re_port"`
+    Pfe_port string `yaml:pfe_port"`
+    Re_Vcpu uint `yaml:re_vcpu"`
+    Pfe_Vcpu uint `yaml:pfe_vcpu"`
     Links []Link `yaml:"link"`
 }
 
@@ -123,14 +144,14 @@ func DeleteBridges(node Nodes) {
 - stop domain (action delete)
 
 /* Function to create new device disk to append into array devices list */
-func NewDisk(node Node) libvirtxml.DomainDisk {
+func NewDisk(path string) libvirtxml.DomainDisk {
     var val uint = 0
     return libvirtxml.DomainDisk {
         Device:"disk",
         Driver: &libvirtxml.DomainDiskDriver {Name: "qemu", Type: "qcow2"},
         Source: &libvirtxml.DomainDiskSource {
             File: &libvirtxml.DomainDiskSourceFile {
-                File: node.Re_ImagePath}},
+                File: path}},
         Target: &libvirtxml.DomainDiskTarget {
             Dev: "hda",
             Bus: "ide" },
@@ -182,13 +203,13 @@ func NewController(ctype string, index uint, model string,
     }
 }
 
-/* Function to create new Serial type device */
-func NewSerial(port *uint, portnum string, name string)libvirtxml.DomainConsole {
+/* Function to create new Console type device */
+func NewConsole(port uint, portnum string, name string)libvirtxml.DomainConsole {
     return libvirtxml.DomainConsole {
          Source: &libvirtxml.DomainChardevSource {
                      TCP: &libvirtxml.DomainChardevSourceTCP {
                          Mode: "bind",
-                         Host: "127.0.0.1",
+                         Host: LISTEN_ADDRESS,
                          Service: portnum,
                          TLS: "no",
                      },
@@ -198,7 +219,31 @@ func NewSerial(port *uint, portnum string, name string)libvirtxml.DomainConsole 
          },
          Target: &libvirtxml.DomainConsoleTarget {
                  Type: "serial",
-                 Port: port,
+                 Port: &port,
+         },
+         Alias: &libvirtxml.DomainAlias {
+             Name: name,
+         },
+    }
+}
+
+/* Function to creae new Serial type device */
+func NewSerial(port uint, portnum string, name string)libvirtxml.DomainSerial {
+    return libvirtxml.DomainSerial {
+         Source: &libvirtxml.DomainChardevSource {
+                     TCP: &libvirtxml.DomainChardevSourceTCP {
+                         Mode: "bind",
+                         Host: LISTEN_ADDRESS,
+                         Service: portnum,
+                         TLS: "no",
+                     },
+         },
+         Protocol: &libvirtxml.DomainChardevProtocol {
+                     Type: "telnet",
+         },
+         Target: &libvirtxml.DomainSerialTarget {
+                 Type: "serial",
+                 Port: &port,
          },
          Alias: &libvirtxml.DomainAlias {
              Name: name,
@@ -226,10 +271,30 @@ func GraphicListeners(address string)libvirtxml.DomainGraphicListener {
     }
 }
 
+/* Function to enable graphics for the VM */
+func Graphics(listener []libvirtxml.DomainGraphicListener)libvirtxml.DomainGraphic {
+    return libvirtxml.DomainGraphic {
+        VNC: &libvirtxml.DomainGraphicVNC {
+            AutoPort: "yes",
+            Listen: LISTEN_ADDRESS,
+            Listeners: listener,
+            //Listeners is a [] and needs to appended during initialization
+        },
+    }
+}
+
+/* Function for Features array in CPU */
+func CpuFeatures(policy string, name string) libvirtxml.DomainCPUFeature {
+    return libvirtxml.DomainCPUFeature {
+        Policy: policy,
+        Name: name,
+    }
+}
+
 /* Function for Video */
 func Videos(ram uint, vram uint, vgamem uint, alias string,
-            pcidomain *uint, pcibus *uint, pcislot *uint,
-            pcifunction *uint) libvirtxml.DomainVideo {
+            pcidomain uint, pcibus uint, pcislot uint,
+            pcifunction uint) libvirtxml.DomainVideo {
     return libvirtxml.DomainVideo {
          Model: libvirtxml.DomainVideoModel {
              Type: "qxl",
@@ -241,23 +306,12 @@ func Videos(ram uint, vram uint, vgamem uint, alias string,
          Alias: &libvirtxml.DomainAlias {Name: alias},
          Address: &libvirtxml.DomainAddress {
              PCI: &libvirtxml.DomainAddressPCI {
-                 Domain: pcidomain,
-                 Bus: pcibus,
-                 Slot: pcislot,
-                 Function: pcifunction,
+                 Domain: &pcidomain,
+                 Bus: &pcibus,
+                 Slot: &pcislot,
+                 Function: &pcifunction,
              },
          },
-    }
-}
-
-/* Function to enable graphics for the VM */
-func Graphics()libvirtxml.DomainGraphic {
-    return libvirtxml.DomainGraphic {
-        VNC: &libvirtxml.DomainGraphicVNC {
-            AutoPort: "yes",
-            Listen: "127.0.0.1",
-            //Listeners is a [] and needs to appended during initialization
-        },
     }
 }
 
@@ -280,35 +334,38 @@ func NewNetworkIntf(mac string, link string , intf string,
     }
 }
 
-func TemplateVqfxRe(node Node) *libvirtxml.Domain {
+/* Function DomTemplate */
+func DomTemplate(name string, memory uint, cores int, vcpu uint) *libvirtxml.Domain {
     /* const nint is used to controller the display of certain xmls 
-    which need to be declared as null*/
-    const nint uint = 999
+    which need to be declared as null since we cannot pass uint(null)
+    . Check if we can pass optional arguments to the function that we way
+    we can avoid duplication of the objects*/
     ipci := uint(0x00)
     domcfg := &libvirtxml.Domain {
         Type: "kvm",
-        Name: node.Name,
+        Name: name,
         Memory: &libvirtxml.DomainMemory {
-            Value: node.Re_memory,
+            Value: memory,
             Unit: "MB",
         },
         VCPU: &libvirtxml.DomainVCPU {
             Placement: "static",
-            Value: 1 },
+            Value: vcpu },
         OS: &libvirtxml.DomainOS {
             Type: &libvirtxml.DomainOSType {
                 Arch: "x86_64",
                 Machine: "pc-i440fx-xenial",
                 Type: "hvm" }},
-        /*Features: []libvirtxml.DomainFeatureList {
+        Features: &libvirtxml.DomainFeatureList {
             APIC: &libvirtxml.DomainFeatureAPIC {
-                EOI:""}
-        },*/
+                EOI:""},
+            ACPI: &libvirtxml.DomainFeature {},
+        },
         CPU: &libvirtxml.DomainCPU{
             Mode: "host-model",
             Topology: &libvirtxml.DomainCPUTopology {
                 Sockets: 1,
-                Cores: node.Re_Cores,
+                Cores: cores,
                 Threads: 1}},
         OnPoweroff: "destroy",
         OnReboot: "restart",
@@ -332,8 +389,19 @@ func TemplateVqfxRe(node Node) *libvirtxml.Domain {
             },
         },
     }
-    disk := NewDisk(node)
-    domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk)
+    return domcfg
+}
+
+/* Function for vQFX-RE Template generation */
+func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain) {
+    const nint uint = 999
+    domcfg := DomTemplate(node.Name, uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
+    dompfecfg := DomTemplate(node.Name, uint(node.Pfe_memory), node.Pfe_Cores, uint(node.Pfe_Vcpu))
+    disk_re := NewDisk(node.Re_ImagePath)
+    disk_pfe := NewDisk(node.Pfe_ImagePath)
+
+    domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk_re)
+    dompfecfg.Devices.Disks = append(dompfecfg.Devices.Disks, disk_pfe)
 
     /* Reference for function params 
     func NewController(ctype string, index uint, model string,
@@ -348,12 +416,81 @@ func TemplateVqfxRe(node Node) *libvirtxml.Domain {
     c5 := NewController("pci",uint(0),"pci-root","pci.0",nint,nint,nint,nint,"") 
     c6 := NewController("ide",uint(0),"","ide",uint(0x0000),uint(0x00),uint(0x01),uint(0x0),"")
     c7 := NewController("virtio-serial",uint(0),"","virtio-serial0",uint(0x0000),uint(0x00),uint(0x0a),uint(0x0),"")
+
+    /* Reference for serial function params
+    func NewSerial(port *uint, portnum string, name string)
+    */
+    s1 := NewSerial(uint(0),node.Re_port,"serial0")
+    s1_pfe := NewSerial(uint(0), node.Pfe_port, "serial0")
+
+    /* Reference for input function params
+    func NewInputs(itype string, bus string, name string)
+    */ 
+    i1 := NewInputs("mouse","ps2", "mouse")
+    i2 := NewInputs("keyboard","ps2","keyboard")
+
+    /* Reference for console function params
+    func NewConsole(port *uint, portnum string, name string)
+    */
+    co := NewConsole(uint(0),node.Re_port,"serial0")
+    co_pfe := NewConsole(uint(0),node.Pfe_port,"serial0")
+
+    /* reference for Graphics function params
+    func GraphicListeners(address string)
+    */
+    gl := GraphicListeners(LISTEN_ADDRESS)
+    gla := []libvirtxml.DomainGraphicListener{gl}
+    g1 := Graphics(gla)
+    /* Reference for Video function params
+    func Videos(ram uint, vram uint, vgamem uint, alias string,
+            pcidomain *uint, pcibus *uint, pcislot *uint,
+            pcifunction *uint)
+    */
+    v1 := Videos(65536,65536,16384,"video0",uint(0x0000),uint(0x00),uint(0x02),uint(0x0))
+
     domcfg.Devices.Controllers = append(domcfg.Devices.Controllers, c1, c2, c3, c4, c5, c6, c7)
+    dompfecfg.Devices.Controllers = append(dompfecfg.Devices.Controllers, c1, c2, c3, c4, c5, c6, c7)
+
+    domcfg.Devices.Serials = append(domcfg.Devices.Serials, s1)
+    dompfecfg.Devices.Serials = append(dompfecfg.Devices.Serials, s1_pfe)
+
+    domcfg.Devices.Inputs = append(domcfg.Devices.Inputs, i1, i2)
+    dompfecfg.Devices.Inputs = append(dompfecfg.Devices.Inputs, i1, i2)
+
+    domcfg.Devices.Consoles = append(domcfg.Devices.Consoles, co)
+    dompfecfg.Devices.Consoles = append(dompfecfg.Devices.Consoles, co_pfe)
+
+    domcfg.Devices.Graphics = append(domcfg.Devices.Graphics, g1)
+    dompfecfg.Devices.Graphics = append(dompfecfg.Devices.Graphics, g1)
+
+    domcfg.Devices.Videos = append(domcfg.Devices.Videos, v1)
+    dompfecfg.Devices.Videos = append(dompfecfg.Devices.Videos, v1)
+
+    hdevid := fmt.Sprintf("%02x",devid)
+    /* Add only vqfx-int and vqfx-mgmt interfaces into vQFX-PFE */
+    intf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_INT_MAC_ADDRESS,"00")+hdevid,
+                                node.Name+"_int", node.Name+"_pfe-int", "e1000")
+    intf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_EXT_MAC_ADDRESS,"00")+hdevid,
+                                node.Name+"_ext", node.Name+"_pfe-ext", "e1000")
+    dompfecfg.Devices.Interfaces = append(dompfecfg.Devices.Interfaces, intf_int, intf_ext)
+
+    /* Add vqfx int, ext and res interfaces for RE. These would be the first 3 interfaces */
+    re_int := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_INT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
+                            node.Name+"_int", node.Name+"_re-int", "e1000")
+    re_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_EXT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
+                            node.Name+"_ext", node.Name+"_re-ext", "e1000")
+    re_res := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_RES_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
+                            node.Name+"_res", node.Name+"_re-res", "e1000")
+    domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, re_int, re_ext, re_res)
+
+    /* Add vqfx xe interfaces. This would be added to teh RE */
     for i:=0; i<len(node.Links); i++ {
-       nintf := NewNetworkIntf("02:aa:01:10:00:01", node.Links[i].Name, node.Links[i].Intf, "e1000")
+       i_to_hex := fmt.Sprintf("%02x",i)
+       nintf := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_LINK_MAC_ADDRESS,"00:00")+hdevid+":"+i_to_hex,
+                                 node.Links[i].Name, node.Links[i].Intf, "e1000")
        domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, nintf)
     }
-    return domcfg
+    return domcfg, dompfecfg
 }
 
 /* Pass struct to function to handle topo spin up*/ 
@@ -363,19 +500,40 @@ func Genxml(node Nodes) {
             fmt.Printf("%+v\n", node.Network_nodes[i].VnfType)
             //Generate RE and PFE xml
         } else if node.Network_nodes[i].VnfType == "vqfx" {
-            domcfg := TemplateVqfxRe(node.Network_nodes[i])
+            domcfg,dompfecfg := TemplateVqfx(node.Network_nodes[i],i)
             rexmldoc, err := domcfg.Marshal()
+            pfexmldoc, err1 := dompfecfg.Marshal()
             if err != nil {
-                fmt.Printf("Marshing failed %v\n", err)
+                fmt.Printf("Marshing of RE xml failed %v\n", err)
             }
-            fmt.Printf("%v", rexmldoc)
-            /*
-            if os.Args[1] == "action" {
-                //write into file
-            }*/
+            if err1 != nil {
+                fmt.Printf("marshaling of PFE xml failed %v\n", err)
+            }
+            direc := "./templates/"+strings.TrimSuffix(os.Args[2], ".yaml")
+            _, err = os.Stat(direc)
+            if os.IsNotExist(err) {
+                os.Mkdir(direc,0777)
+            }
+            WriteToFile(node.Network_nodes[i].Name+"_vqfx-re.xml", direc+"/", rexmldoc)
+            WriteToFile(node.Network_nodes[i].Name+"_vqfx-pfe.xml", direc+"/", pfexmldoc)
         } else if node.Network_nodes[i].VnfType == "vsrx" {
             fmt.Printf("%+v\n", node.Network_nodes[i].VnfType)
         }
+    }
+}
+
+/* Function write to file */
+func WriteToFile(name string, path string, data string) {
+    cat := path+name
+    fmt.Print(cat)
+    f,err := os.Create(cat) 
+    if err != nil {
+        fmt.Printf("Failed to create the file\n")
+    }
+    defer f.Close()
+    _,err2 := f.WriteString(data)
+    if err2 != nil {
+        fmt.Printf(" Failed to write content into file\n")
     }
 }
 

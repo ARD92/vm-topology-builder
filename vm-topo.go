@@ -253,6 +253,7 @@ func NewDisk(path string) libvirtxml.DomainDisk {
     var val uint = 0
     return libvirtxml.DomainDisk {
         Device:"disk",
+        //BackingStore: {},
         Driver: &libvirtxml.DomainDiskDriver {Name: "qemu", Type: "qcow2"},
         Source: &libvirtxml.DomainDiskSource {
             File: &libvirtxml.DomainDiskSourceFile {
@@ -347,7 +348,7 @@ func NewSerial(port uint, portnum string, name string)libvirtxml.DomainSerial {
                      Type: "telnet",
          },
          Target: &libvirtxml.DomainSerialTarget {
-                 Type: "serial",
+                 Type: "isa-serial",
                  Port: &port,
          },
          Alias: &libvirtxml.DomainAlias {
@@ -426,7 +427,7 @@ func NewNetworkIntf(mac string, link string , intf string,
     return libvirtxml.DomainInterface {
         MAC: &libvirtxml.DomainInterfaceMAC { Address: mac },
         Source: &libvirtxml.DomainInterfaceSource {
-            Network: &libvirtxml.DomainInterfaceSourceNetwork {
+            Bridge: &libvirtxml.DomainInterfaceSourceBridge {
                Bridge: link,
             },
         },
@@ -500,8 +501,8 @@ func DomTemplate(name string, memory uint, cores int, vcpu uint) *libvirtxml.Dom
 /* Function for vQFX-RE Template generation */
 func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain) {
     const nint uint = 999
-    domcfg := DomTemplate(node.Name, uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
-    dompfecfg := DomTemplate(node.Name, uint(node.Pfe_memory), node.Pfe_Cores, uint(node.Pfe_Vcpu))
+    domcfg := DomTemplate(node.Name+"-re", uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
+    dompfecfg := DomTemplate(node.Name+"-pfe", uint(node.Pfe_memory), node.Pfe_Cores, uint(node.Pfe_Vcpu))
     disk_re := NewDisk(node.Re_ImagePath)
     disk_pfe := NewDisk(node.Pfe_ImagePath)
 
@@ -514,12 +515,12 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
                      pcislot uint, pcifunc uint, pcimultifunc string,
                     ) libvirtxml.DomainController {
     */
-    c1 := NewController("usb",uint(0),"ich9-ehci1","usb",uint(0x0000),uint(0x00),uint(0x01),uint(0x1),"")
-    c2 := NewController("usb",uint(0),"ich9-uhci1","usb",uint(0x0000),uint(0x00),uint(0x02),uint(0x2),"on")
-    c3 := NewController("usb",uint(0),"ich9-uhci2","usb",uint(0x0000),uint(0x00),uint(0x03),uint(0x2),"")
-    c4 := NewController("usb",uint(0),"ich9-uhci3","usb",uint(0x0000),uint(0x00),uint(0x04),uint(0x4),"")
+    c1 := NewController("usb",uint(0),"ich9-ehci1","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x7),"")
+    c2 := NewController("usb",uint(0),"ich9-uhci1","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x0),"on")
+    c3 := NewController("usb",uint(0),"ich9-uhci2","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x1),"")
+    c4 := NewController("usb",uint(0),"ich9-uhci3","usb",uint(0x0000),uint(0x00),uint(0x0b),uint(0x2),"")
     c5 := NewController("pci",uint(0),"pci-root","pci.0",nint,nint,nint,nint,"") 
-    c6 := NewController("ide",uint(0),"","ide",uint(0x0000),uint(0x00),uint(0x05),uint(0x5),"")
+    c6 := NewController("ide",uint(0),"","ide",uint(0x0000),uint(0x00),uint(0x01),uint(0x01),"")
     c7 := NewController("virtio-serial",uint(0),"","virtio-serial0",uint(0x0000),uint(0x00),uint(0x0a),uint(0x0),"")
 
     /* Reference for serial function params

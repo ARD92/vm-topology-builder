@@ -2,8 +2,8 @@
 network_nodes:
   - 
     name: "vqfx7"
-    reImagePath: "/home/aprabh/vmx"
-    pfeImagePath: "/home/aprabh/vmx/pfe"
+    reImagePath: "/home/aprabh/vm-topology-builder/build/vqfx7/vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImagePath: "/home/aprabh/vm-topology-builder/build/vqfx7/vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     numIntf: 5
     vnfType: "vqfx"
     re_memory: 1024
@@ -11,9 +11,9 @@ network_nodes:
     re_cores: 1
     pfe_cores: 1
     re_vcpu: 1
-    pfe_vcpu: 4
-    re_port: 8610
-    pfe_port: 8710
+    pfe_vcpu: 1
+    re_port: 8910
+    pfe_port: 8210
     link: 
       # name is user defined. This will be used to create the bridge name
       - name: "test1_test2"
@@ -25,8 +25,8 @@ network_nodes:
 
   -
     name: "vqfx8"
-    reImagePath: "/home/aprabh/vqfx"
-    pfeImagePath: "/home/aprabh/vqfx"
+    reImagePath: "/home/aprabh/vm-topology-builder/build/vqfx8/vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImagePath: "/home/aprabh/vm-topology-builder/build/vqfx7/vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     numIntf: 5
     re_memory: 1024
     pfe_memory: 2048
@@ -34,9 +34,9 @@ network_nodes:
     re_cores: 1
     pfe_cores: 1
     re_vcpu: 1
-    pfe_vcpu: 4
-    re_port: 8611
-    pfe_port: 8711
+    pfe_vcpu: 1
+    re_port: 8911
+    pfe_port: 8211
     link:
       - name: "test1_test2"
         intf: "ge-0.0.0-vqfx8"

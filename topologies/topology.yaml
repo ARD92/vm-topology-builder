@@ -2,9 +2,9 @@
 network_nodes:
   - 
     name: "vqfx7"
-    reImagePath: "/home/aprabh/vm-topology-builder/build/vqfx7/vqfx-20.2R1.10-re-qemu.qcow2"
-    pfeImagePath: "/home/aprabh/vm-topology-builder/build/vqfx7/vqfx-20.2R1-2019010209-pfe-qemu.qcow"
-    numIntf: 5
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     vnfType: "vqfx"
     re_memory: 1024
     pfe_memory: 2048
@@ -25,9 +25,9 @@ network_nodes:
 
   -
     name: "vqfx8"
-    reImagePath: "/home/aprabh/vm-topology-builder/build/vqfx8/vqfx-20.2R1.10-re-qemu.qcow2"
-    pfeImagePath: "/home/aprabh/vm-topology-builder/build/vqfx7/vqfx-20.2R1-2019010209-pfe-qemu.qcow"
-    numIntf: 5
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     re_memory: 1024
     pfe_memory: 2048
     vnfType: "vqfx"

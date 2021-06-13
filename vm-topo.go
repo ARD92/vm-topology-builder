@@ -10,9 +10,7 @@ export GO111MODULE=off
 ./vm-topo-builder -action <create/delete/genxml> -t <topology.yml>
 
 To do:
-1. use libvirt-go bindings to start the created domain
-2. copy the image into build directory and mark that as source path 
-3. complete template for vMX and vSRX
+1. complete template for vMX and vSRX
 */
 
 package main
@@ -20,15 +18,17 @@ package main
 import (
     "fmt"
     "log"
+    "net"
+    "time"
     "io/ioutil"
     "os"
+    "os/exec"
     "strings"
-    //"strconv"
-    //"encoding/xml"
     "gopkg.in/yaml.v3"
     "github.com/vishvananda/netlink"
-    //"libvirt.org/go/libvirtxml"
     "libvirt.org/libvirt-go-xml"
+    "github.com/digitalocean/go-libvirt"
+    //"github.com/libvirt/libvirt-go"
     //"./templates/vqfx"
     //"./templates/vsrx"
     //"./templates/vmx"
@@ -61,9 +61,9 @@ type Link struct {
 
 type Node struct {
     Name string `yaml:"name"`
-    Re_ImagePath string `yaml:"reImagePath"`
-    Pfe_ImagePath string `yaml:"pfeImagePath"`
-    NumIntf int `yaml:"numIntf"`
+    ImagePath string `yaml:"imagePath"`
+    Re_Image string `yaml:"reImage"`
+    Pfe_Image string `yaml:"pfeImage"`
     VnfType string `yaml:"vnfType"`
     Re_memory uint `yaml:"re_memory"`
     Pfe_memory uint `yaml:"pfe_memory"`
@@ -80,7 +80,9 @@ type Nodes struct  {
     Network_nodes [] Node `yaml:"network_nodes"`
 }
 
-/* Read template */
+/* Read XM template 
+Currently not used.
+*/
 func Readtemplate(file string) string {
     xmlfile, err := os.Open(file)
     if err!= nil {
@@ -114,9 +116,6 @@ func CreateBridges(node Nodes) {
             qbattr_int := &netlink.Bridge{LinkAttrs: qattr_int}
             qbattr_ext := &netlink.Bridge{LinkAttrs: qattr_ext}
             qbattr_res := &netlink.Bridge{LinkAttrs: qattr_res}
-            fmt.Printf("%v\n",qbattr_int)
-            fmt.Printf("%v\n",qbattr_ext)
-            fmt.Printf("%v\n",qbattr_res)
 
             err_int := netlink.LinkAdd(qbattr_int)
             if err_int != nil {
@@ -503,8 +502,8 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
     const nint uint = 999
     domcfg := DomTemplate(node.Name+"-re", uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
     dompfecfg := DomTemplate(node.Name+"-pfe", uint(node.Pfe_memory), node.Pfe_Cores, uint(node.Pfe_Vcpu))
-    disk_re := NewDisk(node.Re_ImagePath)
-    disk_pfe := NewDisk(node.Pfe_ImagePath)
+    disk_re := NewDisk(node.ImagePath + node.Re_Image)
+    disk_pfe := NewDisk(node.ImagePath + node.Pfe_Image)
 
     domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk_re)
     dompfecfg.Devices.Disks = append(dompfecfg.Devices.Disks, disk_pfe)
@@ -599,7 +598,9 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
     return domcfg, dompfecfg
 }
 
-/* Pass struct to function to handle topo spin up*/ 
+/* Pass struct to function to handle topo spin up
+Generate domain xml, define and start 
+*/ 
 func Genxml(node Nodes) {
     for i:=0; i<len(node.Network_nodes);i++ {
         if node.Network_nodes[i].VnfType == "vmx" {
@@ -615,13 +616,19 @@ func Genxml(node Nodes) {
             if err1 != nil {
                 fmt.Printf("marshaling of PFE xml failed %v\n", err)
             }
-            direc := "./templates/"+strings.TrimSuffix(os.Args[2], ".yaml")
-            _, err = os.Stat(direc)
-            if os.IsNotExist(err) {
-                os.Mkdir(direc,0777)
+            /* if genxml save the xml into a directory */
+            if os.Args[1] == "genxml" {
+                direc := "./templates/"+strings.TrimSuffix(os.Args[2], ".yaml")
+                _, err = os.Stat(direc)
+                if os.IsNotExist(err) {
+                    os.Mkdir(direc,0777)
+                }
+                WriteToFile(node.Network_nodes[i].Name+"_vqfx-re.xml", direc+"/", rexmldoc)
+                WriteToFile(node.Network_nodes[i].Name+"_vqfx-pfe.xml", direc+"/", pfexmldoc)
+            } else {
+               DomainStart(rexmldoc)
+               DomainStart(pfexmldoc) 
             }
-            WriteToFile(node.Network_nodes[i].Name+"_vqfx-re.xml", direc+"/", rexmldoc)
-            WriteToFile(node.Network_nodes[i].Name+"_vqfx-pfe.xml", direc+"/", pfexmldoc)
         } else if node.Network_nodes[i].VnfType == "vsrx" {
             fmt.Printf("%+v\n", node.Network_nodes[i].VnfType)
         }
@@ -631,7 +638,6 @@ func Genxml(node Nodes) {
 /* Function write to file */
 func WriteToFile(name string, path string, data string) {
     cat := path+name
-    fmt.Print(cat)
     f,err := os.Create(cat) 
     if err != nil {
         fmt.Printf("Failed to create the file\n")
@@ -643,6 +649,81 @@ func WriteToFile(name string, path string, data string) {
     }
 }
 
+/* Function to copy images to build directory 
+Pass pointer to function and modify the source Image path
+under node.Re_ImagePath and node.Pfe_ImagePath
+*/
+func CopyImage(nodes *Nodes) {
+    // create directory based on node name
+    cwd, err := os.Getwd()
+    if err != nil {
+        fmt.Printf("Failed to obtain current working directory. Exiting program\n")
+        os.Exit(1)
+    }
+    for i:=0; i<len(nodes.Network_nodes);i++ {
+        dir := cwd + "/build/"+nodes.Network_nodes[i].Name+"/"
+        _,err := os.Stat(dir)
+       if os.IsNotExist(err) {
+            fmt.Printf("Directory doesnt exist under build, creating it!..\n") 
+            os.Mkdir(dir, 0777)
+        }
+        cpcmd_re := exec.Command("cp","-rf", nodes.Network_nodes[i].ImagePath + nodes.Network_nodes[i].Re_Image, dir)
+        err1 := cpcmd_re.Run()
+        if err1 != nil {
+            fmt.Printf("FAILED COPYING RE IMAGE TO BUILD DIRECTORY!!: %v \n", err1)
+        } 
+        // vSRX/Ubuntu would be single image. Use ony Re_ImagePath and leave Pfe_ImagePath blank
+        if nodes.Network_nodes[i].Pfe_Image != "" {
+            cpcmd_pfe := exec.Command("cp", "-rf", nodes.Network_nodes[i].ImagePath + nodes.Network_nodes[i].Pfe_Image, dir)
+            err2 := cpcmd_pfe.Run()
+            if err2 !=nil {
+                fmt.Printf("FAILED COPYING PFE IMAGE TO BUILD DIRECTORY !!: %v \n", err2)
+            }
+        }
+        nodes.Network_nodes[i].ImagePath = dir 
+    }
+}
+
+func DomainStop(name string) {
+    fmt.Printf("Destroying VMs and undefining.. \n")
+    c, err := net.DialTimeout("unix", "/var/run/libvirt/libvirt-sock", 2*time.Second)
+    if err != nil {
+		log.Fatalf("failed to dial libvirt: %v", err)
+	}
+    conn := libvirt.New(c)
+    if err := conn.Connect(); err != nil {
+		log.Fatalf("failed to connect: %v", err)
+	}
+    if err!=nil {
+        fmt.Printf("LIBVIRT CONNECTION FAILED! :%v", err)
+    }
+    dom, err := conn.DomainLookupByName(name) 
+    if err == nil {
+        conn.DomainDestroy(dom)
+        conn.DomainUndefine(dom)
+    }
+    fmt.Printf("Destroyed and undefined all domains under %s \n",os.Args[2])
+}
+
+
+func DomainStart(xml string) {
+    c, err := net.DialTimeout("unix", "/var/run/libvirt/libvirt-sock", 2*time.Second)
+    if err != nil {
+		log.Fatalf("failed to dial libvirt: %v", err)
+	}
+    conn := libvirt.New(c)
+    if err := conn.Connect(); err != nil {
+		log.Fatalf("failed to connect: %v", err)
+	}
+    domain, err := conn.DomainDefineXML(xml)
+    if err !=nil {
+        fmt.Printf("DOMAIN %v DEFINITION FAILED!!: %v\n", domain, err)
+    }
+    err = conn.DomainCreate(domain)
+    if err !=nil {
+        fmt.Printf("DOMAIN CREATION FAILED!! %v", err)
+    }
+}
 /*
 Main function definition
 */
@@ -663,13 +744,26 @@ func main() {
         } else {
             fmt.Printf("Missing argument Topology yaml file\n")
         }
+        //var nodesptr *Nodes = &nodes //pass pointer so that we can operate on same address to modify vals
         if os.Args[1] == "create" {
             fmt.Printf("Creating bridges\n")
             //Parse through yaml and create all bridges needed to define topology
             CreateBridges(nodes)
-            //copy original image to build directory and refer that xml
-            //Genxml(nodes)
+            //copy original image to build directory and refer that xml, hence pass pointer.
+            CopyImage(&nodes)
+            Genxml(nodes)
         } else if os.Args[1] == "delete" {
+            for i:=0 ;i<len(nodes.Network_nodes); i++ {
+                if nodes.Network_nodes[i].VnfType == "vqfx" {
+                    DomainStop(nodes.Network_nodes[i].Name +"-re")
+                    DomainStop(nodes.Network_nodes[i].Name +"-pfe")
+                }else if nodes.Network_nodes[i].VnfType == "vmx" {
+                    DomainStop(nodes.Network_nodes[i].Name +"-re")
+                    DomainStop(nodes.Network_nodes[i].Name +"-pfe")
+                }else if nodes.Network_nodes[i].VnfType == "vsrx" {
+                    DomainStop(nodes.Network_nodes[i].Name +"-re")
+                }
+            }
             fmt.Printf("Deleting bridges\n")
             DeleteBridges(nodes)
         } else if os.Args[1] == "genxml" {
@@ -699,9 +793,11 @@ func main() {
             fmt.Printf(" Unknown first argument. Please check \n")
         }
     } else {
-        fmt.Printf("\n INVALID OPTION. FOLLOW THE BELOW USAGE\n")
-        fmt.Printf("\n+++++++++++++++++ usage +++++++++++++++++++++ \n ")
-        fmt.Printf(" ./vm-topo <create/delete> <path to topo.yml>\n")
-        fmt.Print("+++++++++++++++++++++++++++++++++++++++++++++\n")
+        fmt.Printf(`
+        INVALID OPTION. Follow the below usage
+
+        +++++++++++++++++ usage +++++++++++++++++++++
+        ./vm-topo <create/delete> <path to topo.yml>
+        +++++++++++++++++++++++++++++++++++++++++++++`)
     }
 }

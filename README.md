@@ -6,7 +6,25 @@ The VMs/VNFs would be virtio based as this is intended to spin up topologies for
 
 The program can also be used to generate only the xml files which could be used later by using virsh define and virsh start commands
 
-Directory structure:
+### Packages required for compilation and functioning 
+- go get "gopkg.in/yaml.v3"
+- go get "github.com/vishvananda/netlink"
+- go get "libvirt.org/libvirt-go-xml"
+- go get "libvirt.org/git/libvirt-go"
+    Be sure to download libvirt-dev package , else it may not work as expected. 
+    apt install -y libvirt-dev 
+
+Note: In case libvirt-dev package is not installed, you may see multiple errors such as below when performing "go get"
+
+```
+Perhaps you should add the directory containing `libvirt.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'libvirt' found
+
+...
+```
+
+### Directory structure:
 - templates: templates for each vnf based on dir. genxml will store the files in respective directory
 - build: creates a directory based on topology names with respective images copied and is referenced in xml
 - images: original image

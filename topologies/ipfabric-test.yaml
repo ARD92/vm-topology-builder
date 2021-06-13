@@ -1,0 +1,162 @@
+#                             +---------------+                     +----------------+
+#                             |               |              0.0.0  |                |
+#                    0.0.0    |    spine-1    |0.0.2     +---------->     spine-2    |
+#                   +-------->|               +--+       |          |                |
+#                   |         +----------^----+  |       |          +--------------^-+
+#                   |             0.0.1  |       |       |             ^0.0.1      | 0.0.2
+#                   |                    |       |       |             |           |
+#                   |        +-----------+-------+-------+-------------+           |
+#                   |        |           |       |       |                         |
+#                   |        |           |       |       |                         |
+#                   |        |           +-------+-------+---------------------+   |
+#          ge-0.0.0 |        |0.0.1       0.0.0  |       | 0.0.1         0.0.0 |   | 0.0.1
+#            +------+--------+-+             +---v-------+-----+          +----v---+--------+
+#            |                 |             |                 |          |                 |
+#            |     leaf-1      |             |      leaf-2     |          |      leaf-3     |
+#            |                 |             |                 |          |                 |
+#            +---^----+--------+             +---------------+-+          +----------------^+
+#        0.0.2   |    | 0.0.3                     ^          |                ^            |
+#                |    |                    0.0.2  |    0.0.3 |         0.0.2  |     0.0.3  |
+#           +----+    +---+                       |          |                |            |
+#           |             |                       |          |                |            |
+#           |             |                       |          |                |            |
+#           |             |                       |          |                |            |
+#           |             |                       |          |                |            |
+#       +---+-+        +--v--+                  +-+--+      +v--+           +-+--+       +-+-+
+#       | vm1 |        | vm2 |                  | vm3|      |vm4|           | vm5|       |vm6|
+#       +-----+        +-----+                  +----+      +---+           +----+       +---+
+#       
+---
+network_nodes:
+  -
+    name: "spine1"
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
+    vnfType: "vqfx"
+    re_memory: 1024
+    pfe_memory: 2048
+    re_cores: 1
+    pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 1
+    re_port: 8110
+    pfe_port: 8210
+    link:
+      - name: "spine1_leaf1"
+        intf: "ge-0.0.0-spine1"
+        peerintf: "ge-0.0.0-leaf1"
+      - name: "spine1_leaf2"
+        intf: "ge-0.0.2-spine1"
+        peerintf: "ge-0.0.0-leaf2"
+      - name: "spine1_leaf3"
+        intf: "ge-0.0.1-spine1"
+        peerintf: "ge-0.0.0-leaf3"
+
+  -
+    name: "spine2"
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
+    vnfType: "vqfx"
+    re_memory: 1024
+    pfe_memory: 2048
+    re_cores: 1
+    pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 1
+    re_port: 8111
+    pfe_port: 8211
+    link:
+      - name: "spine2_leaf1"
+        intf: "ge-0.0.1-spine2"
+        peerintf: "ge-0.0.1-leaf1"
+      - name: "spine2_leaf2"
+        intf: "ge-0.0.0-spine1"
+        peerintf: "ge-0.0.1-leaf2"
+      - name: "spine2_leaf3"
+        intf: "ge-0.0.2-spine1"
+        peerintf: "ge-0.0.1-leaf3"
+           
+  -
+    name: "leaf1"
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
+    vnfType: "vqfx"
+    re_memory: 1024
+    pfe_memory: 2048
+    re_cores: 1
+    pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 1
+    re_port: 8112
+    pfe_port: 8212
+    link:
+      - name: "leaf1_spine1"
+        intf: "ge-0.0.0-leaf1"
+        peerintf: "ge-0.0.0-spine1"
+      - name: "leaf1_spine2"
+        intf: "ge-0.0.1-leaf1"
+        peerintf: "ge-0.0.1-spine2"
+      - name: "leaf1_vm1"
+        intf: "ge-0.0.2-leaf1"
+        peerintf: ""
+      - name: "leaf1_vm2"
+        intf: "ge-0.0.3-leaf1"
+        peerintf: ""
+  -
+    name: "leaf2"
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
+    vnfType: "vqfx"
+    re_memory: 1024
+    pfe_memory: 2048
+    re_cores: 1
+    pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 1
+    re_port: 8113
+    pfe_port: 8213
+    link:
+      - name: "leaf2_spine1"
+        intf: "ge-0.0.0-leaf2"
+        peerintf: "ge-0.0.2-spine1"
+      - name: "leaf2_spine2"
+        intf: "ge-0.0.1-leaf2"
+        peerintf: "ge-0.0.0-spine2"
+      - name: "leaf2_vm3"
+        intf: "ge-0.0.2-leaf2"
+        peerintf: ""
+      - name: "leaf2_vm4"
+        intf: "ge-0.0.3-leaf2"
+        peerintf: ""
+  -
+    name: "leaf3"
+    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
+    pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
+    vnfType: "vqfx"
+    re_memory: 1024
+    pfe_memory: 2048
+    re_cores: 1
+    pfe_cores: 1
+    re_vcpu: 1
+    pfe_vcpu: 1
+    re_port: 8114
+    pfe_port: 8214
+    link:
+      - name: "leaf3_spine1"
+        intf: "ge-0.0.0-leaf3"
+        peerintf: "ge-0.0.1-spine1"
+      - name: "leaf3_spine2"
+        intf: "ge-0.0.1-leaf3"
+        peerintf: "ge-0.0.2-spine2"
+      - name: "leaf3_vm5"
+        intf: "ge-0.0.2-leaf3"
+        peerintf: ""
+      - name: "leaf1_vm6"
+        intf: "ge-0.0.3-leaf3"
+        peerintf: ""
+           

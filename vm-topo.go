@@ -10,7 +10,8 @@ export GO111MODULE=off
 ./vm-topo-builder -action <create/delete/genxml> -t <topology.yml>
 
 To do:
-1. complete template for vMX and vSRX
+1. use libvirt-go bindings to start the created domain
+2. complete template for vMX and vSRX
 */
 
 package main
@@ -655,6 +656,7 @@ under node.Re_ImagePath and node.Pfe_ImagePath
 */
 func CopyImage(nodes *Nodes) {
     // create directory based on node name
+    fmt.Printf("Copying image from source path to build directory. Image will use the build dir path as source... \n")
     cwd, err := os.Getwd()
     if err != nil {
         fmt.Printf("Failed to obtain current working directory. Exiting program\n")
@@ -671,7 +673,9 @@ func CopyImage(nodes *Nodes) {
         err1 := cpcmd_re.Run()
         if err1 != nil {
             fmt.Printf("FAILED COPYING RE IMAGE TO BUILD DIRECTORY!!: %v \n", err1)
-        } 
+        }
+        fmt.Printf("Sleeping for 10seconds to ensure file copies successfully\n")
+        time.Sleep(10) 
         // vSRX/Ubuntu would be single image. Use ony Re_ImagePath and leave Pfe_ImagePath blank
         if nodes.Network_nodes[i].Pfe_Image != "" {
             cpcmd_pfe := exec.Command("cp", "-rf", nodes.Network_nodes[i].ImagePath + nodes.Network_nodes[i].Pfe_Image, dir)
@@ -707,6 +711,7 @@ func DomainStop(name string) {
 
 
 func DomainStart(xml string) {
+    fmt.Printf("Defining and Starting the Domains... \n")
     c, err := net.DialTimeout("unix", "/var/run/libvirt/libvirt-sock", 2*time.Second)
     if err != nil {
 		log.Fatalf("failed to dial libvirt: %v", err)

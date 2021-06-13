@@ -1,5 +1,0 @@
-<network>
-  <name>vqfx-int</name>
-  <bridge name='vqf-int' stp='on' delay='0'/>
-  <mac address='52:54:00:38:57:22'/>
-</network>

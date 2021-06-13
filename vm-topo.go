@@ -10,8 +10,10 @@ export GO111MODULE=off
 ./vm-topo-builder -action <create/delete/genxml> -t <topology.yml>
 
 To do:
-1. use libvirt-go bindings to start the created domain
-2. complete template for vMX and vSRX
+1. complete template for
+    -  vMX 
+    -  vSRX
+    -  Ubuntu
 */
 
 package main
@@ -50,6 +52,9 @@ var BASE_VSRX_INT_MAC_ADDRESS string = "02:aa:01:30:00:00"
 var BASE_VSRX_EXT_MAC_ADDRESS string = "02:aa:01:31:00:00"
 
 const LISTEN_ADDRESS string = "127.0.0.1"
+const BRIDGE_MTU int = 9000
+const BRIDGE_MGMT string = "mgmt_ext"
+const VQFX_BRIDGE_RES string = "vqfx_res"
 
 /*
 Struct to parse input yaml file
@@ -102,29 +107,34 @@ func Readtemplate(file string) string {
 */
 
 func CreateBridges(node Nodes) {
+    /* Define common mgmt bridg */
+    qattr_ext := netlink.NewLinkAttrs()
+    qattr_ext.Name = BRIDGE_MGMT
+    qattr_ext.MTU = BRIDGE_MTU
+    qbattr_ext := &netlink.Bridge{LinkAttrs: qattr_ext}
+    err_ext := netlink.LinkAdd(qbattr_ext)
+    if err_ext !=nil {
+        fmt.Printf("Bridge %s not added: %v\n", qattr_ext.Name, err_ext)
+    }
+    qsattr_ext,_ := netlink.LinkByName(qattr_ext.Name)
+    if serr := netlink.LinkSetUp(qsattr_ext); serr != nil {
+        fmt.Printf("Bridge not up: %v\n",serr)
+    }
     for i:=0; i<len(node.Network_nodes); i++ {
         if node.Network_nodes[i].VnfType == "vqfx" {
             fmt.Printf("Entering vqfx creating bridges\n")
             qattr_int := netlink.NewLinkAttrs()
-            qattr_ext := netlink.NewLinkAttrs()
             qattr_res := netlink.NewLinkAttrs()
             qattr_int.Name = node.Network_nodes[i].Name+"_int"
-            qattr_ext.Name = node.Network_nodes[i].Name+"_ext"
-            qattr_res.Name = node.Network_nodes[i].Name+"_res"
-            qattr_int.MTU = 9000
-            qattr_ext.MTU = 9000
-            qattr_res.MTU =9000
+            qattr_res.Name = VQFX_BRIDGE_RES
+            qattr_int.MTU = BRIDGE_MTU
+            qattr_res.MTU = BRIDGE_MTU
             qbattr_int := &netlink.Bridge{LinkAttrs: qattr_int}
-            qbattr_ext := &netlink.Bridge{LinkAttrs: qattr_ext}
             qbattr_res := &netlink.Bridge{LinkAttrs: qattr_res}
 
             err_int := netlink.LinkAdd(qbattr_int)
             if err_int != nil {
                 fmt.Printf("Bridge %s not added: %v\n", qattr_int.Name, err_int)
-            }
-            err_ext := netlink.LinkAdd(qbattr_ext)
-            if err_ext !=nil {
-                fmt.Printf("Bridge %s not added: %v\n", qattr_ext.Name, err_ext)
             }
             err_res := netlink.LinkAdd(qbattr_res)
             if err_res !=nil {
@@ -133,10 +143,6 @@ func CreateBridges(node Nodes) {
 
             qsattr_int,_ := netlink.LinkByName(qattr_int.Name)
             if serr := netlink.LinkSetUp(qsattr_int); serr != nil {
-                fmt.Printf("Bridge not up: %v\n",serr)
-            }
-            qsattr_ext,_ := netlink.LinkByName(qattr_ext.Name)
-            if serr := netlink.LinkSetUp(qsattr_ext); serr != nil {
                 fmt.Printf("Bridge not up: %v\n",serr)
             }
             qsattr_res,_ := netlink.LinkByName(qattr_res.Name)
@@ -153,7 +159,7 @@ func CreateBridges(node Nodes) {
             //fmt.Printf("+v\n", node.Network_nodes[i].Links)
             linkattr := netlink.NewLinkAttrs() 
             linkattr.Name = node.Network_nodes[i].Links[j].Name
-            linkattr.MTU = 9000 
+            linkattr.MTU = BRIDGE_MTU
             bridge := &netlink.Bridge{LinkAttrs: linkattr}
             err := netlink.LinkAdd(bridge)
             if err!=nil {
@@ -171,52 +177,56 @@ func CreateBridges(node Nodes) {
 
 /* Function to delete bridges when deleting the topology */
 func DeleteBridges(node Nodes) {
+    qattr_ext := netlink.NewLinkAttrs()
+    qattr_ext.Name = BRIDGE_MGMT
+    qbattr_ext := &netlink.Bridge {LinkAttrs: qattr_ext}
+    qsattr_ext,serr := netlink.LinkByName(qattr_ext.Name)
+    if serr != nil {
+        fmt.Printf("Link not found \n")
+    } else {
+        serr := netlink.LinkSetDown(qsattr_ext)
+        if serr !=nil {
+            fmt.Printf("Link %s not present %s\n",qsattr_ext, serr)
+        }
+        errext := netlink.LinkDel(qbattr_ext)
+        if errext != nil {
+            fmt.Print("Bridge %s not deleted\n",qattr_ext.Name)
+        }
+    }
     for i:=0; i<len(node.Network_nodes); i++ {
         if node.Network_nodes[i].VnfType == "vqfx" {
             qattr_int := netlink.NewLinkAttrs()
-            qattr_ext := netlink.NewLinkAttrs()
             qattr_res := netlink.NewLinkAttrs()
             qattr_int.Name = node.Network_nodes[i].Name+"_int"
-            qattr_ext.Name = node.Network_nodes[i].Name+"_ext"
-            qattr_res.Name = node.Network_nodes[i].Name+"_res"
+            qattr_res.Name = VQFX_BRIDGE_RES
             qbattr_int := &netlink.Bridge {LinkAttrs: qattr_int}
-            qbattr_ext := &netlink.Bridge {LinkAttrs: qattr_ext}
             qbattr_res := &netlink.Bridge {LinkAttrs: qattr_res}
 
             qsattr_int,serr := netlink.LinkByName(qattr_int.Name)
             if serr != nil {
-                fmt.Printf("Link not found")
+                fmt.Printf("Link not found\n")
+            } else {
+                serr := netlink.LinkSetDown(qsattr_int)
+                if serr !=nil {
+                    fmt.Printf("Link not present %s\n", serr)
+                }
+                errint := netlink.LinkDel(qbattr_int)
+                if errint != nil {
+                    fmt.Print("Bridge %s not deleted\n",qattr_int.Name)
+                }
             }
-            if serr := netlink.LinkSetDown(qsattr_int); serr !=nil {
-                fmt.Printf("Link not present %s", serr)
-            }
-            errint := netlink.LinkDel(qbattr_int)
-            if errint != nil {
-                fmt.Print("Bridge %s not deleted",qattr_int.Name)
-            }
-
-            qsattr_ext,serr := netlink.LinkByName(qattr_ext.Name)
-            if serr != nil {
-                fmt.Printf("Link not found")
-            }
-            if serr := netlink.LinkSetDown(qsattr_ext); serr !=nil {
-                fmt.Printf("Link not present %s", serr)
-            }
-            errext := netlink.LinkDel(qbattr_ext)
-            if errext != nil {
-                fmt.Print("Bridge %s not deleted",qattr_ext.Name)
-            }
-
             qsattr_res,serr := netlink.LinkByName(qattr_res.Name)
             if serr != nil {
-                fmt.Printf("Link not found")
-            }
-            if serr := netlink.LinkSetDown(qsattr_res); serr !=nil {
-                fmt.Printf("Link not present %s", serr)
-            }
-            errres := netlink.LinkDel(qbattr_res)
-            if errres != nil {
-                fmt.Print("Bridge %s not deleted",qattr_res.Name)
+                fmt.Printf("Link %s not found\n", qattr_res.Name)
+            } else {
+                serr := netlink.LinkSetDown(qsattr_res)
+                if serr !=nil {
+                    fmt.Printf("Link not present %s\n", serr)
+                }
+                errres := netlink.LinkDel(qbattr_res)
+                if errres != nil {
+                    fmt.Print("Bridge %s not deleted\n",qattr_res.Name)
+                }
             }
         } else if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Printf("Deleting vmx int and vmx ext bridges [WIP]\n")
@@ -228,11 +238,11 @@ func DeleteBridges(node Nodes) {
             linkattr.Name = node.Network_nodes[i].Links[j].Name
             linkname,err := netlink.LinkByName(linkattr.Name)
             if err !=nil {
-                fmt.Printf("Link not found")
+                fmt.Printf("Link not found\n")
                 continue
             }
             if err := netlink.LinkSetDown(linkname); err !=nil {
-                fmt.Printf("Link not present : %s", err)
+                fmt.Printf("Link not present : %s\n", err)
             }
             bridge := &netlink.Bridge{LinkAttrs: linkattr}
             erro := netlink.LinkDel(bridge)
@@ -577,16 +587,16 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
     intf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_INT_MAC_ADDRESS,"00")+hdevid,
                                 node.Name+"_int", node.Name+"_pfe-int", "e1000")
     intf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_EXT_MAC_ADDRESS,"00")+hdevid,
-                                node.Name+"_ext", node.Name+"_pfe-ext", "e1000")
+                                BRIDGE_MGMT, node.Name+"_pfe-ext", "e1000")
     dompfecfg.Devices.Interfaces = append(dompfecfg.Devices.Interfaces, intf_int, intf_ext)
 
     /* Add vqfx int, ext and res interfaces for RE. These would be the first 3 interfaces */
     re_int := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_INT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
                             node.Name+"_int", node.Name+"_re-int", "e1000")
     re_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_EXT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
-                            node.Name+"_ext", node.Name+"_re-ext", "e1000")
+                            BRIDGE_MGMT, node.Name+"_re-ext", "e1000")
     re_res := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_RES_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
-                            node.Name+"_res", node.Name+"_re-res", "e1000")
+                            VQFX_BRIDGE_RES, node.Name+"_re-res", "e1000")
     domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, re_int, re_ext, re_res)
 
     /* Add vqfx xe interfaces. This would be added to teh RE */
@@ -801,8 +811,11 @@ func main() {
         fmt.Printf(`
         INVALID OPTION. Follow the below usage
 
+        make sure you place the the topo.yaml file in same dir as the executable. I am lazy to fix this to 
+        accept relative directory.
+
         +++++++++++++++++ usage +++++++++++++++++++++
-        ./vm-topo <create/delete> <path to topo.yml>
+        ./vm-topo <create/delete/genxml> <topo.yml>
         +++++++++++++++++++++++++++++++++++++++++++++`)
     }
 }

@@ -1,0 +1,125 @@
+<domain type="kvm">
+  <name>spine1-re</name>
+  <memory unit="MB">1024</memory>
+  <vcpu placement="static">1</vcpu>
+  <os>
+    <type arch="x86_64" machine="pc-i440fx-xenial">hvm</type>
+  </os>
+  <features>
+    <acpi></acpi>
+    <apic></apic>
+  </features>
+  <cpu mode="host-model">
+    <topology sockets="1" cores="1" threads="1"></topology>
+  </cpu>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <pm>
+    <suspend-to-mem enabled="no"></suspend-to-mem>
+    <suspend-to-disk enabled="no"></suspend-to-disk>
+  </pm>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2"></driver>
+      <source file="/home/aprabh/vqfx/vqfx4/vqfx-20.2R1.10-re-qemu.qcow2"></source>
+      <target dev="hda" bus="ide"></target>
+      <alias name="ide-0-0"></alias>
+      <address type="drive" controller="0" bus="0" target="0" unit="0"></address>
+    </disk>
+    <controller type="usb" index="0" model="ich9-ehci1">
+      <alias name="usb"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0b" function="0x7"></address>
+    </controller>
+    <controller type="usb" index="0" model="ich9-uhci1">
+      <alias name="usb"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0b" function="0x0" multifunction="on"></address>
+    </controller>
+    <controller type="usb" index="0" model="ich9-uhci2">
+      <alias name="usb"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0b" function="0x1"></address>
+    </controller>
+    <controller type="usb" index="0" model="ich9-uhci3">
+      <alias name="usb"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0b" function="0x2"></address>
+    </controller>
+    <controller type="pci" index="0" model="pci-root">
+      <alias name="pci.0"></alias>
+    </controller>
+    <controller type="ide" index="0">
+      <alias name="ide"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"></address>
+    </controller>
+    <controller type="virtio-serial" index="0">
+      <alias name="virtio-serial0"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0a" function="0x0"></address>
+    </controller>
+    <interface type="bridge">
+      <mac address="02:aa:01:21:00:00"></mac>
+      <source bridge="spine1_int"></source>
+      <target dev="spine1_re-int"></target>
+      <model type="e1000"></model>
+    </interface>
+    <interface type="bridge">
+      <mac address="02:aa:01:22:00:00"></mac>
+      <source bridge="mgmt_ext"></source>
+      <target dev="spine1_re-ext"></target>
+      <model type="e1000"></model>
+    </interface>
+    <interface type="bridge">
+      <mac address="02:aa:01:23:00:00"></mac>
+      <source bridge="vqfx_res"></source>
+      <target dev="spine1_re-res"></target>
+      <model type="e1000"></model>
+    </interface>
+    <interface type="bridge">
+      <mac address="02:aa:01:20:00:00"></mac>
+      <source bridge="spine1_leaf1"></source>
+      <target dev="ge-0.0.0-spine1"></target>
+      <model type="e1000"></model>
+    </interface>
+    <interface type="bridge">
+      <mac address="02:aa:01:20:00:01"></mac>
+      <source bridge="spine1_leaf2"></source>
+      <target dev="ge-0.0.2-spine1"></target>
+      <model type="e1000"></model>
+    </interface>
+    <interface type="bridge">
+      <mac address="02:aa:01:20:00:02"></mac>
+      <source bridge="spine1_leaf3"></source>
+      <target dev="ge-0.0.1-spine1"></target>
+      <model type="e1000"></model>
+    </interface>
+    <serial type="tcp">
+      <source mode="bind" host="127.0.0.1" service="8110" tls="no"></source>
+      <protocol type="telnet"></protocol>
+      <target type="isa-serial" port="0"></target>
+      <alias name="serial0"></alias>
+    </serial>
+    <console type="tcp">
+      <source mode="bind" host="127.0.0.1" service="8110" tls="no"></source>
+      <protocol type="telnet"></protocol>
+      <target type="serial" port="0"></target>
+      <alias name="serial0"></alias>
+    </console>
+    <input type="mouse" bus="ps2">
+      <alias name="mouse"></alias>
+    </input>
+    <input type="keyboard" bus="ps2">
+      <alias name="keyboard"></alias>
+    </input>
+    <graphics type="vnc" autoport="yes" listen="127.0.0.1">
+      <listen type="address" address="127.0.0.1"></listen>
+    </graphics>
+    <video>
+      <model type="qxl" heads="1" ram="65536" vram="65536" vgamem="16384"></model>
+      <alias name="video0"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0"></address>
+    </video>
+    <memballoon model="virtio">
+      <alias name="balloon"></alias>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x00" function="0x0"></address>
+    </memballoon>
+  </devices>
+</domain>

@@ -72,10 +72,10 @@ network_nodes:
         intf: "ge-0.0.1-spine2"
         peerintf: "ge-0.0.1-leaf1"
       - name: "spine2_leaf2"
-        intf: "ge-0.0.0-spine1"
+        intf: "ge-0.0.0-spine2"
         peerintf: "ge-0.0.1-leaf2"
       - name: "spine2_leaf3"
-        intf: "ge-0.0.2-spine1"
+        intf: "ge-0.0.2-spine2"
         peerintf: "ge-0.0.1-leaf3"
            
   -
@@ -93,10 +93,11 @@ network_nodes:
     re_port: 8112
     pfe_port: 8212
     link:
-      - name: "leaf1_spine1"
+      # re-use bridge names accordingly so that the respective peer intf are connected
+      - name: "spine1_leaf1"
         intf: "ge-0.0.0-leaf1"
         peerintf: "ge-0.0.0-spine1"
-      - name: "leaf1_spine2"
+      - name: "spine2_leaf1"
         intf: "ge-0.0.1-leaf1"
         peerintf: "ge-0.0.1-spine2"
       - name: "leaf1_vm1"
@@ -120,10 +121,10 @@ network_nodes:
     re_port: 8113
     pfe_port: 8213
     link:
-      - name: "leaf2_spine1"
+      - name: "spine1_leaf2"
         intf: "ge-0.0.0-leaf2"
         peerintf: "ge-0.0.2-spine1"
-      - name: "leaf2_spine2"
+      - name: "spine2_leaf2"
         intf: "ge-0.0.1-leaf2"
         peerintf: "ge-0.0.0-spine2"
       - name: "leaf2_vm3"
@@ -147,16 +148,16 @@ network_nodes:
     re_port: 8114
     pfe_port: 8214
     link:
-      - name: "leaf3_spine1"
+      - name: "spine1_leaf3"
         intf: "ge-0.0.0-leaf3"
         peerintf: "ge-0.0.1-spine1"
-      - name: "leaf3_spine2"
+      - name: "spine2_leaf3"
         intf: "ge-0.0.1-leaf3"
         peerintf: "ge-0.0.2-spine2"
       - name: "leaf3_vm5"
         intf: "ge-0.0.2-leaf3"
         peerintf: ""
-      - name: "leaf1_vm6"
+      - name: "leaf3_vm6"
         intf: "ge-0.0.3-leaf3"
         peerintf: ""
            

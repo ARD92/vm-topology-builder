@@ -431,24 +431,57 @@ func Videos(ram uint, vram uint, vgamem uint, alias string,
     }
 }
 
-/* Function to create new interfaces based on link mentioned in topology.yaml */
+/* Function to create new interfaces based on link mentioned in topology.yaml 
+Since the revenue interfaces dont have the Address params, using a flag type to 
+determine whether the template for DomainAddress is needed or not.
+when Domain address not needed, pass 999 to pcidomain and other params. only PCI
+domain is added to check however since it encountered first anyway.
+WIP: look for a better way to templatize
+*/
 func NewNetworkIntf(mac string, link string , intf string,
-                     model string)libvirtxml.DomainInterface {
-    return libvirtxml.DomainInterface {
-        MAC: &libvirtxml.DomainInterfaceMAC { Address: mac },
-        Source: &libvirtxml.DomainInterfaceSource {
-            Bridge: &libvirtxml.DomainInterfaceSourceBridge {
-               Bridge: link,
+                     model string, pcidomain uint, pcibus uint,
+                     pcislot uint, pcifunction uint)libvirtxml.DomainInterface {
+    if pcidomain ==999 {
+        return libvirtxml.DomainInterface {
+            MAC: &libvirtxml.DomainInterfaceMAC { Address: mac },
+            Source: &libvirtxml.DomainInterfaceSource {
+                Bridge: &libvirtxml.DomainInterfaceSourceBridge {
+                   Bridge: link,
+                },
             },
-        },
-        Target: &libvirtxml.DomainInterfaceTarget {
-            Dev: intf,
-        },
-        Model: &libvirtxml.DomainInterfaceModel {
-            Type: model,
-        },
+            Target: &libvirtxml.DomainInterfaceTarget {
+                Dev: intf,
+            },
+            Model: &libvirtxml.DomainInterfaceModel {
+                Type: model,
+            },
+        }
+    } else {
+        return libvirtxml.DomainInterface {
+            MAC: &libvirtxml.DomainInterfaceMAC { Address: mac },
+            Source: &libvirtxml.DomainInterfaceSource {
+                Bridge: &libvirtxml.DomainInterfaceSourceBridge {
+                   Bridge: link,
+                },
+            },
+            Target: &libvirtxml.DomainInterfaceTarget {
+                Dev: intf,
+            },
+            Model: &libvirtxml.DomainInterfaceModel {
+                Type: model,
+            },
+            Address: &libvirtxml.DomainAddress {
+                PCI: &libvirtxml.DomainAddressPCI {
+                    Domain: &pcidomain,
+                    Bus: &pcibus,
+                    Slot: &pcislot,
+                    Function: &pcifunction,
+                },
+            },
+        }
     }
 }
+
 
 /* Function DomTemplate */
 func DomTemplate(name string, memory uint, cores int, vcpu uint) *libvirtxml.Domain {
@@ -582,28 +615,33 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
     domcfg.Devices.Videos = append(domcfg.Devices.Videos, v1)
     dompfecfg.Devices.Videos = append(dompfecfg.Devices.Videos, v1)
 
-    hdevid := fmt.Sprintf("%02x",devid)
+    hdevid := fmt.Sprintf("%02x",devid+1)
     /* Add only vqfx-int and vqfx-mgmt interfaces into vQFX-PFE */
     intf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_INT_MAC_ADDRESS,"00")+hdevid,
-                                node.Name+"_int", node.Name+"_pfe-int", "e1000")
+                                BRIDGE_MGMT, node.Name+"_pfe-int", "e1000", uint(0x0000),
+                                uint(0x00), uint(0x03), uint(0x0))
     intf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_EXT_MAC_ADDRESS,"00")+hdevid,
-                                BRIDGE_MGMT, node.Name+"_pfe-ext", "e1000")
+                                node.Name+"_int", node.Name+"_pfe-ext", "e1000", uint(0x0000),
+                                uint(0x00), uint(0x04), uint(0x00))
     dompfecfg.Devices.Interfaces = append(dompfecfg.Devices.Interfaces, intf_int, intf_ext)
 
     /* Add vqfx int, ext and res interfaces for RE. These would be the first 3 interfaces */
     re_int := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_INT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
-                            node.Name+"_int", node.Name+"_re-int", "e1000")
+                            BRIDGE_MGMT, node.Name+"_re-int", "e1000", uint(0x0000), uint(0x00),
+                            uint(0x03), uint(0x00))
     re_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_EXT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
-                            BRIDGE_MGMT, node.Name+"_re-ext", "e1000")
+                            node.Name+"_int", node.Name+"_re-ext", "e1000",uint(0x0000), uint(0x00), uint(0x04),
+                            uint(0x00))
     re_res := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_RES_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
-                            VQFX_BRIDGE_RES, node.Name+"_re-res", "e1000")
+                            VQFX_BRIDGE_RES, node.Name+"_re-res", "e1000", uint(0x0000), uint(0x00), uint(0x05),
+                            uint(0x00))
     domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, re_int, re_ext, re_res)
 
     /* Add vqfx xe interfaces. This would be added to teh RE */
     for i:=0; i<len(node.Links); i++ {
        i_to_hex := fmt.Sprintf("%02x",i)
        nintf := NewNetworkIntf(strings.TrimSuffix(BASE_VQFX_LINK_MAC_ADDRESS,"00:00")+hdevid+":"+i_to_hex,
-                                 node.Links[i].Name, node.Links[i].Intf, "e1000")
+                                 node.Links[i].Name, node.Links[i].Intf, "e1000", nint, nint, nint, nint)
        domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, nintf)
     }
     return domcfg, dompfecfg
@@ -811,11 +849,8 @@ func main() {
         fmt.Printf(`
         INVALID OPTION. Follow the below usage
 
-        make sure you place the the topo.yaml file in same dir as the executable. I am lazy to fix this to 
-        accept relative directory.
-
         +++++++++++++++++ usage +++++++++++++++++++++
-        ./vm-topo <create/delete/genxml> <topo.yml>
+        ./vm-topo <create/delete> <path to topo.yml>
         +++++++++++++++++++++++++++++++++++++++++++++`)
     }
 }

@@ -201,7 +201,7 @@ vqfx4-re (ttyd0)
 login: root
 Password:
 
-The default user/password is Juniper
+The default user/password is root/Juniper
 ```
 
 #### Delete topology
@@ -216,3 +216,21 @@ The default user/password is Juniper
 The XML files are stored under the directory templates with the topology file name as the subdirectory
 
 
+### Setup Instructions 
+#### Installing QEMU-KVM dependencies 
+The below were tried on Ubuntu 18.04 Bionic
+```
+sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+```
+
+#### Install Golang
+##### Docker
+```
+docker run -itd golang:latest --name go -v ${PWD}:/usr/src/app bash 
+```
+using go get, install all necessary packages
+
+##### Build steps
+```
+go build vm-topo.go
+```

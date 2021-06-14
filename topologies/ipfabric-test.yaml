@@ -30,16 +30,16 @@
 network_nodes:
   -
     name: "spine1"
-    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    imagePath: "/home/aprabh/vqfx/"
     reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
     pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     vnfType: "vqfx"
     re_memory: 1024
-    pfe_memory: 2048
+    pfe_memory: 4096
     re_cores: 1
-    pfe_cores: 1
+    pfe_cores: 4
     re_vcpu: 1
-    pfe_vcpu: 1
+    pfe_vcpu: 4
     re_port: 8110
     pfe_port: 8210
     link:
@@ -55,16 +55,16 @@ network_nodes:
 
   -
     name: "spine2"
-    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    imagePath: "/home/aprabh/vqfx/"
     reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
     pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     vnfType: "vqfx"
     re_memory: 1024
-    pfe_memory: 2048
+    pfe_memory: 4096
     re_cores: 1
-    pfe_cores: 1
+    pfe_cores: 4
     re_vcpu: 1
-    pfe_vcpu: 1
+    pfe_vcpu: 4
     re_port: 8111
     pfe_port: 8211
     link:
@@ -80,16 +80,16 @@ network_nodes:
            
   -
     name: "leaf1"
-    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    imagePath: "/home/aprabh/vqfx/"
     reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
     pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     vnfType: "vqfx"
     re_memory: 1024
-    pfe_memory: 2048
+    pfe_memory: 4096
     re_cores: 1
-    pfe_cores: 1
+    pfe_cores: 4
     re_vcpu: 1
-    pfe_vcpu: 1
+    pfe_vcpu: 4
     re_port: 8112
     pfe_port: 8212
     link:
@@ -108,16 +108,16 @@ network_nodes:
         peerintf: ""
   -
     name: "leaf2"
-    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    imagePath: "/home/aprabh/vqfx/"
     reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
     pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     vnfType: "vqfx"
     re_memory: 1024
-    pfe_memory: 2048
+    pfe_memory: 4096
     re_cores: 1
-    pfe_cores: 1
+    pfe_cores: 4
     re_vcpu: 1
-    pfe_vcpu: 1
+    pfe_vcpu: 4
     re_port: 8113
     pfe_port: 8213
     link:
@@ -135,16 +135,16 @@ network_nodes:
         peerintf: ""
   -
     name: "leaf3"
-    imagePath: "/home/aprabh/vqfx/vqfx4/"
+    imagePath: "/home/aprabh/vqfx/"
     reImage: "vqfx-20.2R1.10-re-qemu.qcow2"
     pfeImage: "vqfx-20.2R1-2019010209-pfe-qemu.qcow"
     vnfType: "vqfx"
     re_memory: 1024
-    pfe_memory: 2048
+    pfe_memory: 4096
     re_cores: 1
-    pfe_cores: 1
+    pfe_cores: 4
     re_vcpu: 1
-    pfe_vcpu: 1
+    pfe_vcpu: 4
     re_port: 8114
     pfe_port: 8214
     link:

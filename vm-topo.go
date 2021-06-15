@@ -1,18 +1,23 @@
 /*
 __Author__ : Aravind Prabhakar
-native go implementation of vNF topology builder. vMX/vSRX/vQFX can be used.
+Description: native go implementation of vNF topology builder. vMX/vSRX/vQFX can be used.
 This is for functional testing purposes. The topology will be built on the same compute only.
+
+Version 1.0 
+- Added vQFX support 
+
+Version 1.1
+- Added vMX and vSRX Support 
+- Fixes in handling deletion of bridges
 
 The below may be required. if not, packages arent downloaded into go container.
 export GO111MODULE=off
 
 +++++++ Usage ++++++++
-./vm-topo-builder -action <create/delete/genxml> -t <topology.yml>
+./vm-topo-builder -action <create/delete/genxml> -t <topology.yaml>
 
 To do:
 1. complete template for
-    -  vMX 
-    -  vSRX
     -  Ubuntu
 */
 
@@ -56,6 +61,9 @@ const BRIDGE_MTU int = 9000
 const BRIDGE_MGMT string = "mgmt_ext"
 const VQFX_BRIDGE_RES string = "vqfx_res"
 
+const VMX_HDD string = "vmxhdd.img"
+const VMX_METADATA_USB_RE string = "metadata-usb-re.img"
+
 /*
 Struct to parse input yaml file
 */
@@ -70,6 +78,8 @@ type Node struct {
     ImagePath string `yaml:"imagePath"`
     Re_Image string `yaml:"reImage"`
     Pfe_Image string `yaml:"pfeImage"`
+    Metadata_Image string `yaml:"metadataImage"`
+    Vhdd_Image string `yaml:"vhddImage"`
     VnfType string `yaml:"vnfType"`
     Re_memory uint `yaml:"re_memory"`
     Pfe_memory uint `yaml:"pfe_memory"`
@@ -152,6 +162,18 @@ func CreateBridges(node Nodes) {
 
         } else if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Print("Creating int and ext bridges for VMX [WIP]\n")
+            qattr_int := netlink.NewLinkAttrs()
+            qattr_int.Name = node.Network_nodes[i].Name+"_int"
+            qattr_int.MTU = BRIDGE_MTU
+            qbattr_int := &netlink.Bridge{LinkAttrs: qattr_int}
+            err_int := netlink.LinkAdd(qbattr_int)
+            if err_int != nil {
+                fmt.Printf("Bridge %s not added: %v\n", qattr_int.Name, err_int)
+            }
+           qsattr_int,_ := netlink.LinkByName(qattr_int.Name)
+            if serr := netlink.LinkSetUp(qsattr_int); serr != nil {
+                fmt.Printf("Bridge not up: %v\n", serr)
+            } 
         }
         for j:=0; j<len(node.Network_nodes[i].Links); j++ {
             //fmt.Printf("+v\n", node.Network_nodes[i].Links)
@@ -227,7 +249,23 @@ func DeleteBridges(node Nodes) {
                 }
             }
         } else if node.Network_nodes[i].VnfType == "vmx" {
-            fmt.Printf("Deleting vmx int and vmx ext bridges [WIP]\n")
+            fmt.Printf("Deleting vmx int and vmx ext bridges\n")
+            qattr_int := netlink.NewLinkAttrs()
+            qattr_int.Name = node.Network_nodes[i].Name+"_int"
+            qbattr_int := &netlink.Bridge {LinkAttrs: qattr_int}
+            qsattr_int, serr := netlink.LinkByName(qattr_int.Name)
+            if serr != nil {
+                fmt.Printf("link not found\n")
+            } else {
+                serr := netlink.LinkSetDown(qsattr_int)
+                if serr !=nil {
+                    fmt.Printf("Bridge %s not deleted\n", qattr_int.Name)
+                }
+                errint := netlink.LinkDel(qbattr_int)
+                if errint != nil {
+                    fmt.Printf("Bridge %s not deleted\n", qattr_int.Name)
+                }
+            }
         }
         /* There is no RE-PFE connecting bridges for vSRX so nothing to delete there */
         for j:=0; j<len(node.Network_nodes[i].Links); j++ {
@@ -256,28 +294,52 @@ func DeleteBridges(node Nodes) {
 - stop domain (action delete)
 
 /* Function to create new device disk to append into array devices list */
-func NewDisk(path string) libvirtxml.DomainDisk {
+func NewDisk(path string, imgtype string, dev string, bus string, name string, slot uint) libvirtxml.DomainDisk {
     var val uint = 0
-    return libvirtxml.DomainDisk {
-        Device:"disk",
-        //BackingStore: {},
-        Driver: &libvirtxml.DomainDiskDriver {Name: "qemu", Type: "qcow2"},
-        Source: &libvirtxml.DomainDiskSource {
-            File: &libvirtxml.DomainDiskSourceFile {
-                File: path}},
-        Target: &libvirtxml.DomainDiskTarget {
-            Dev: "hda",
-            Bus: "ide" },
-        Alias: &libvirtxml.DomainAlias {
-            Name: "ide-0-0"},
-        Address: &libvirtxml.DomainAddress {
-            Drive: &libvirtxml.DomainAddressDrive {
-                Controller: &val ,
-                Bus: &val,
-                Target: &val,
-                Unit: &val,
+    if bus == "virtio" {
+        return libvirtxml.DomainDisk {
+            Device:"disk",
+            //BackingStore: {},
+            Driver: &libvirtxml.DomainDiskDriver {Name: "qemu", Type: imgtype},
+            Source: &libvirtxml.DomainDiskSource {
+                File: &libvirtxml.DomainDiskSourceFile {
+                    File: path}},
+            Target: &libvirtxml.DomainDiskTarget {
+                Dev: dev,
+                Bus: bus },
+            Alias: &libvirtxml.DomainAlias {
+                Name: imgtype },
+            Address: &libvirtxml.DomainAddress {
+                PCI: &libvirtxml.DomainAddressPCI {
+                    Domain: &val ,
+                    Bus: &val,
+                    Slot: &slot,
+                    Function: &val,
+                },
             },
-        },
+        }
+    } else {
+        return libvirtxml.DomainDisk {
+            Device:"disk",
+            //BackingStore: {},
+            Driver: &libvirtxml.DomainDiskDriver {Name: "qemu", Type: imgtype},
+            Source: &libvirtxml.DomainDiskSource {
+                File: &libvirtxml.DomainDiskSourceFile {
+                    File: path}},
+            Target: &libvirtxml.DomainDiskTarget {
+                Dev: dev,
+                Bus: bus },
+            Alias: &libvirtxml.DomainAlias {
+                Name: imgtype },
+            Address: &libvirtxml.DomainAddress {
+                Drive: &libvirtxml.DomainAddressDrive {
+                    Controller: &val ,
+                    Bus: &val,
+                    Target: &val,
+                    Unit: &val,
+                },
+            },
+        }
     }
 }
 
@@ -423,6 +485,7 @@ func Videos(ram uint, vram uint, vgamem uint, alias string,
                  Bus: &pcibus,
                  Slot: &pcislot,
                  Function: &pcifunction,
+                 MultiFunction: "on",
              },
          },
     }
@@ -543,8 +606,8 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
     const nint uint = 999
     domcfg := DomTemplate(node.Name+"-re", uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
     dompfecfg := DomTemplate(node.Name+"-pfe", uint(node.Pfe_memory), node.Pfe_Cores, uint(node.Pfe_Vcpu))
-    disk_re := NewDisk(node.ImagePath + node.Re_Image)
-    disk_pfe := NewDisk(node.ImagePath + node.Pfe_Image)
+    disk_re := NewDisk(node.ImagePath + node.Re_Image, "qcow2", "hda", "ide", "ide-0-0", nint)
+    disk_pfe := NewDisk(node.ImagePath + node.Pfe_Image, "qcow2", "hda", "ide", "ide-0-0", nint)
 
     domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk_re)
     dompfecfg.Devices.Disks = append(dompfecfg.Devices.Disks, disk_pfe)
@@ -647,7 +710,7 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
 func TemplateVsrx(node Node, devid int)(*libvirtxml.Domain) {
     const nint uint = 999
     domcfg := DomTemplate(node.Name, uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
-    disk := NewDisk(node.ImagePath + node.Re_Image)
+    disk := NewDisk(node.ImagePath + node.Re_Image, "qcow2", "hda", "ide", "ide-0-0", nint)
     domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk)
 
     c1 := NewController("usb", uint(0), "ich9-ehci1", "usb", uint(0x0000), uint(0x00), uint(0x09), uint(0x7),"")
@@ -692,6 +755,85 @@ func TemplateVsrx(node Node, devid int)(*libvirtxml.Domain) {
     }
     return domcfg
 }
+
+/* Function for defining vMX template */
+func TemplateVmx(node Node, devid int)(*libvirtxml.Domain, *libvirtxml.Domain){
+    const nint uint = 999
+    domcfg := DomTemplate(node.Name+"-re", uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu)) 
+    dompfecfg := DomTemplate(node.Name+"-pfe",uint(node.Pfe_memory), node.Pfe_Cores, uint(node.Pfe_Vcpu))
+    disk_re := NewDisk(node.ImagePath + node.Re_Image,"qcow2", "vda","virtio","virtio-disk0",uint(0x7))
+    disk_hdd := NewDisk(node.ImagePath + node.Vhdd_Image, "qcow2", "vdb", "virtio", "virtio-disk1",uint(0x8))
+    disk_usb := NewDisk(node.ImagePath + node.Metadata_Image, "raw", "vdc", "virtio", "virtio-disk2",uint(0x9))
+    disk_pfe := NewDisk(node.ImagePath + node.Pfe_Image, "raw", "hda", "ide", "ide0-0-0",nint)
+
+    domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk_re, disk_hdd, disk_usb)
+    dompfecfg.Devices.Disks = append(dompfecfg.Devices.Disks, disk_pfe)
+
+    //dompfecfg.Devices.Disks = append(dompfecfg.Devices.Disks, disk_pfe)
+    c1 := NewController("usb", uint(0), "none","usb",nint, nint,nint, nint,"")
+    c2 := NewController("pci", uint(0), "pci-root","pci.0", nint, nint, nint, nint, "")
+
+    c1p := NewController("pci",uint(0), "pci-root","pci.0",nint, nint, nint, nint, "")
+    c2p := NewController("usb", uint(0), "piix3-uhci", "usb",uint(0x0000), uint(0x00),uint(0x01), uint(0x2), "")
+    c3p := NewController("ide", uint(0), "", "ide",uint(0x0000), uint(0x00),uint(0x01), uint(0x1), "")
+
+    s1 := NewSerial(uint(0), node.Re_port, "serial0")
+    s1p := NewSerial(uint(0), node.Pfe_port, "serial0")
+    co := NewConsole(uint(0), node.Re_port, "serial0")
+    cop := NewConsole(uint(0), node.Pfe_port, "serial0")
+
+    i1 := NewInputs("mouse", "ps2", "input0")
+    i2 := NewInputs("keyboard", "ps2","input1")
+
+    gl := GraphicListeners(LISTEN_ADDRESS)
+    gla := []libvirtxml.DomainGraphicListener{gl}
+    g1 := Graphics(gla)
+
+    v1 := Videos(65536, 65536, 16384, "video", uint(0x0000), uint(0x01), uint(0x03), uint(0x07))
+
+    domcfg.Devices.Controllers = append(domcfg.Devices.Controllers, c1,c2)
+    domcfg.Devices.Serials = append(domcfg.Devices.Serials, s1)
+    domcfg.Devices.Inputs = append(domcfg.Devices.Inputs, i1, i2)
+    domcfg.Devices.Consoles = append(domcfg.Devices.Consoles, co)
+    domcfg.Devices.Graphics  = append(domcfg.Devices.Graphics, g1)
+    domcfg.Devices.Videos = append(domcfg.Devices.Videos, v1)
+    dompfecfg.Devices.Controllers = append(dompfecfg.Devices.Controllers, c1p, c2p, c3p)
+    dompfecfg.Devices.Serials = append(dompfecfg.Devices.Serials, s1p)
+    dompfecfg.Devices.Consoles = append(dompfecfg.Devices.Consoles,cop)
+    dompfecfg.Devices.Inputs = append(dompfecfg.Devices.Inputs, i1, i2)
+    dompfecfg.Devices.Graphics = append(dompfecfg.Devices.Graphics, g1)
+    dompfecfg.Devices.Videos = append(dompfecfg.Devices.Videos, v1)
+
+    hdevid := fmt.Sprintf("%02x", devid+1)
+    /* Add EXT, INT bridges for VCP */
+    intf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_EXT_MAC_ADDRESS,"00")+hdevid,
+                            BRIDGE_MGMT, node.Name+"_re-ext","virtio", uint(0x0000),
+                            uint(0x00), uint(0x03), uint(0x0))
+    intf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_INT_MAC_ADDRESS, "00")+hdevid,
+                            node.Name+"_int", node.Name+"_re-int","virtio",uint(0x0000),
+                            uint(0x00), uint(0x04), uint(0x00))
+    domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, intf_ext, intf_int)
+
+    /* Add EXT, INT briges for VFP */
+    pintf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_EXT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
+                                BRIDGE_MGMT, node.Name+"_pfe-ext","virtio",uint(0x0000),
+                                uint(0x00), uint(0x05), uint(0x0))
+    pintf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_INT_MAC_ADDRESS, "00:00")+hdevid+":"+hdevid,
+                                node.Name+"_int",node.Name+"_pfe-int","virtio", uint(0x0000),
+                                uint(0x00), uint(0x06), uint(0x00))
+    dompfecfg.Devices.Interfaces = append(dompfecfg.Devices.Interfaces, pintf_ext, pintf_int)
+
+    /* Add regular ge interfaces to the PFE */
+    for i:=0; i<len(node.Links); i++ {
+        i_to_hex := fmt.Sprintf("%02x",i)
+        nintf := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_LINK_MAC_ADDRESS, "00:00")+hdevid+":"+i_to_hex,
+                                node.Links[i].Name, node.Links[i].Intf, "virtio", nint, nint, nint, nint)
+        dompfecfg.Devices.Interfaces = append(dompfecfg.Devices.Interfaces, nintf)
+    }
+    return domcfg, dompfecfg
+}
+
+
 /* Pass struct to function to handle topo spin up
 Generate domain xml, define and start 
 */ 
@@ -699,7 +841,27 @@ func Genxml(node Nodes) {
     for i:=0; i<len(node.Network_nodes);i++ {
         if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Printf("%+v\n", node.Network_nodes[i].VnfType)
-            //Generate RE and PFE xml
+            domcfg, dompfecfg := TemplateVmx(node.Network_nodes[i],i)
+            rexmldoc, err := domcfg.Marshal()
+            pfexmldoc, err1 := dompfecfg.Marshal()
+            if err != nil {
+                fmt.Printf("Marshaling of VMX RE Failed %v\n", err)
+            }
+            if err1 !=nil {
+                fmt.Printf("Marshaling of VMX PFE Failed %v\n", err1)
+            }
+            if os.Args[1] == "genxml" {
+                direc := "./templates/"+strings.TrimSuffix(os.Args[2], ".yaml")
+                _, err = os.Stat(direc)
+                if os.IsNotExist(err) {
+                    os.Mkdir(direc, 0777)
+                }
+                WriteToFile(node.Network_nodes[i].Name+"_vmx-re.xml", direc+"/",rexmldoc)
+                WriteToFile(node.Network_nodes[i].Name+"_vmx-pfe.xml",direc+"/",pfexmldoc)
+            } else {
+                DomainStart(rexmldoc)
+                DomainStart(pfexmldoc)
+            }
         } else if node.Network_nodes[i].VnfType == "vqfx" {
             domcfg,dompfecfg := TemplateVqfx(node.Network_nodes[i],i)
             rexmldoc, err := domcfg.Marshal()
@@ -708,7 +870,7 @@ func Genxml(node Nodes) {
                 fmt.Printf("Marshing of RE xml failed %v\n", err)
             }
             if err1 != nil {
-                fmt.Printf("marshaling of PFE xml failed %v\n", err)
+                fmt.Printf("marshaling of PFE xml failed %v\n", err1)
             }
             /* if genxml save the xml into a directory */
             if os.Args[1] == "genxml" {
@@ -791,6 +953,20 @@ func CopyImage(nodes *Nodes) {
             err2 := cpcmd_pfe.Run()
             if err2 !=nil {
                 fmt.Printf("FAILED COPYING PFE IMAGE TO BUILD DIRECTORY !!: %v \n", err2)
+            }
+        }
+        if nodes.Network_nodes[i].Metadata_Image != "" {
+            cpcmd_meta := exec.Command("cp", "-rf", nodes.Network_nodes[i].ImagePath + nodes.Network_nodes[i].Metadata_Image, dir)
+            err3 := cpcmd_meta.Run()
+            if err3 !=nil {
+                fmt.Printf("FAILED COPYING METADATA IMAGE TO BUILD DIRECTORY !!: %v \n", err3)
+            }
+        }
+        if nodes.Network_nodes[i].Vhdd_Image != "" {
+            cpcmd_vhdd := exec.Command("cp", "-rf", nodes.Network_nodes[i].ImagePath + nodes.Network_nodes[i].Vhdd_Image, dir)
+            err4 := cpcmd_vhdd.Run()
+            if err4 !=nil {
+                fmt.Printf("FAILED COPYING VHDD IMAGE TO BUILD DIRECTORY !!: %v \n", err4)
             }
         }
         nodes.Network_nodes[i].ImagePath = dir 
@@ -885,7 +1061,7 @@ func main() {
             Genxml(nodes)
         } else if os.Args[1] == "help" {
             fmt.Printf(` 
-            -------------- VM Topology Builder V1.0 --------------------------------------------
+            -------------- VM Topology Builder V1.1 --------------------------------------------
             Topology builder for Juniper VNFs such as vMX, vQFX and vSRX 
             This is used for functional testing only and is virtio based. 
             The topology will be spun up on the same compute

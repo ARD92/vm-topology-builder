@@ -1,0 +1,51 @@
+# for vMX copy the images vmx.hdd, metadata-usb-re.img, re.qcow2 and pfe.img
+---
+network_nodes:
+  - 
+    name: "vmx1"
+    imagePath: "/home/aprabh/vmx_images/"
+    reImage: "junos-vmx-x86-64-18.4R1-S7.1.qcow2"
+    pfeImage: "vFPC-20200409.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8610
+    pfe_port: 8620
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "vmx1_vmx2"
+        intf: "ge-0.0.0-vmx1"
+        peerintf: "ge-0.0.0-vmx2"
+      - name: "vmx11_vmx22"
+        intf: "ge-0.0.1-vmx1"
+        peerintf: "ge-0.0.1-vmx2"
+
+  -
+    name: "vmx2"
+    imagePath: "/home/aprabh/vmx_images/"
+    reImage: "junos-vmx-x86-64-18.4R1-S7.1.qcow2"
+    pfeImage: "vFPC-20200409.img"
+    metadataImage: "metadata-usb-re.img"
+    vhddImage: "vmxhdd.img" 
+    re_memory: 1024
+    pfe_memory: 4096
+    vnfType: "vmx"
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8611
+    pfe_port: 8621
+    link:
+      - name: "vmx1_vmx2"
+        intf: "ge-0.0.0-vmx2"
+        peerintf: "ge-0.0.0-vmx1"
+      - name: "vmx11_vmx22"
+        intf: "ge-0.0.1-vmx2"
+        peerintf: "ge-0.0.1-vmx1"

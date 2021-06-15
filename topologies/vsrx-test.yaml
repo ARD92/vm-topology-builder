@@ -1,0 +1,48 @@
+---
+network_nodes:
+  - 
+    name: "vsrx1"
+    imagePath: "/home/aprabh/vsrx_images/"
+    reImage: "junos-vsrx3-x86-64-20.2R3.9.qcow2"
+    pfeImage: ""
+    vnfType: "vsrx"
+    re_memory: 4096
+    pfe_memory: 
+    re_cores: 2
+    pfe_cores: 
+    re_vcpu: 2
+    pfe_vcpu: 
+    re_port: 8910
+    pfe_port: 
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "vsrx1_vsrx2"
+        intf: "ge-0.0.0-vsrx1"
+        peerintf: "ge-0.0.0-vsrx2"
+      - name: "vsrx11_vsrx22"
+        intf: "ge-0.0.1-vsrx1"
+        peerintf: "ge-0.0.1-vsrx2"
+
+  -
+    name: "vsrx2"
+    imagePath: "/home/aprabh/vsrx_images/"
+    reImage: "junos-vsrx3-x86-64-20.2R3.9.qcow2"
+    pfeImage: ""
+    vnfType: "vsrx"
+    re_memory: 4096
+    pfe_memory: 
+    re_cores: 2
+    pfe_cores: 
+    re_vcpu: 2
+    pfe_vcpu: 
+    re_port: 8911
+    pfe_port: 
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "vsrx1_vsrx2"
+        intf: "ge-0.0.0-vsrx2"
+        peerintf: "ge-0.0.0-vsrx1"
+      - name: "vsrx11_vsrx22"
+        intf: "ge-0.0.1-vsrx2"
+        peerintf: "ge-0.0.1-vsrx1"
+

@@ -152,8 +152,6 @@ func CreateBridges(node Nodes) {
 
         } else if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Print("Creating int and ext bridges for VMX [WIP]\n")
-        } else if node.Network_nodes[i].VnfType == "vsrx" {
-            fmt.Print("Creating int and ext bridges for VSRX [WIP]\n")
         }
         for j:=0; j<len(node.Network_nodes[i].Links); j++ {
             //fmt.Printf("+v\n", node.Network_nodes[i].Links)
@@ -230,9 +228,8 @@ func DeleteBridges(node Nodes) {
             }
         } else if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Printf("Deleting vmx int and vmx ext bridges [WIP]\n")
-        } else if node.Network_nodes[i].VnfType == "vsrx" {
-            fmt.Printf("Deleting vsrx int and ext bridges [WIP]\n")
         }
+        /* There is no RE-PFE connecting bridges for vSRX so nothing to delete there */
         for j:=0; j<len(node.Network_nodes[i].Links); j++ {
             linkattr := netlink.NewLinkAttrs()
             linkattr.Name = node.Network_nodes[i].Links[j].Name
@@ -647,6 +644,54 @@ func TemplateVqfx(node Node, devid int) (*libvirtxml.Domain, *libvirtxml.Domain)
     return domcfg, dompfecfg
 }
 
+func TemplateVsrx(node Node, devid int)(*libvirtxml.Domain) {
+    const nint uint = 999
+    domcfg := DomTemplate(node.Name, uint(node.Re_memory), node.Re_Cores, uint(node.Re_Vcpu))
+    disk := NewDisk(node.ImagePath + node.Re_Image)
+    domcfg.Devices.Disks = append(domcfg.Devices.Disks, disk)
+
+    c1 := NewController("usb", uint(0), "ich9-ehci1", "usb", uint(0x0000), uint(0x00), uint(0x09), uint(0x7),"")
+    c2 := NewController("usb", uint(0),"ich9-uhci1", "usb", uint(0x0000), uint(0x00), uint(0x09), uint(0x0), "on")
+    c3 := NewController("usb", uint(0), "ich9-uhci2", "usb", uint(0x0000), uint(0x00), uint(0x09), uint(0x1), "")
+    c4 := NewController("usb", uint(0), "ich9-uhci3", "usb", uint(0x0000), uint(0x00), uint(0x09), uint(0x2), "")
+    c5 := NewController("pci", uint(0),"pci-root","pci.0",nint, nint, nint, nint,"")
+    c6 := NewController("virtio-serial", uint(0),"","virtio-serial",uint(0x0000),uint(0x00),uint(0x08),uint(0x0),"")
+
+    s1 := NewSerial(uint(0), node.Re_port, "serial")
+    
+    i1 := NewInputs("mouse","ps2", "mouse")
+    i2 := NewInputs("keyboard","ps2","keyboard")
+
+    co := NewConsole(uint(0),node.Re_port,"serial0")
+
+    gl := GraphicListeners(LISTEN_ADDRESS)
+    gla := []libvirtxml.DomainGraphicListener{gl}
+    g1 := Graphics(gla)
+
+    v1 := Videos(65536,65536,16384,"video0",uint(0x0000),uint(0x00),uint(0x02),uint(0x0))
+    domcfg.Devices.Controllers = append(domcfg.Devices.Controllers, c1,c2,c3,c4,c5,c6)
+    domcfg.Devices.Serials = append(domcfg.Devices.Serials, s1)
+    domcfg.Devices.Inputs = append(domcfg.Devices.Inputs, i1,i2)
+    domcfg.Devices.Consoles = append(domcfg.Devices.Consoles, co)
+    domcfg.Devices.Graphics = append(domcfg.Devices.Graphics, g1)
+    domcfg.Devices.Videos = append(domcfg.Devices.Videos, v1)
+
+    hdevid := fmt.Sprintf("%02x", devid+1)
+    /* Add FXP0 interface. This is the first interface added */
+    intf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VSRX_EXT_MAC_ADDRESS,"00")+hdevid,
+                                BRIDGE_MGMT, node.Name+"-ext", "virtio", uint(0x0000),
+                                uint(0x00), uint(0x03), uint(0x0))
+    domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, intf_ext)
+
+    /* Add the rest of the ge interfaces */
+    for i:=0; i<len(node.Links); i++ {
+        i_to_hex := fmt.Sprintf("%02x", i)
+        nintf := NewNetworkIntf(strings.TrimSuffix(BASE_VSRX_LINK_MAC_ADDRESS,"00:00")+hdevid+":"+i_to_hex,
+                node.Links[i].Name, node.Links[i].Intf, "virtio", nint, nint, nint, nint)
+        domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces,nintf)
+    }
+    return domcfg
+}
 /* Pass struct to function to handle topo spin up
 Generate domain xml, define and start 
 */ 
@@ -680,6 +725,22 @@ func Genxml(node Nodes) {
             }
         } else if node.Network_nodes[i].VnfType == "vsrx" {
             fmt.Printf("%+v\n", node.Network_nodes[i].VnfType)
+            domcfg := TemplateVsrx(node.Network_nodes[i],i)
+            rexmldoc, err := domcfg.Marshal()
+            if err !=nil {
+                fmt.Printf("Marshing of vSRX XML failed %v\n", err)
+            }
+            if os.Args[1] == "genxml" {
+                // add or condition "||" to trim .yaml or .yml 
+                direc := "./templates/"+strings.TrimSuffix(os.Args[2],".yaml") 
+                _, err = os.Stat(direc)
+                if os.IsNotExist(err) {
+                    os.Mkdir(direc, 0777)
+                }
+                WriteToFile(node.Network_nodes[i].Name+"_vsrx.xml", direc+"/",rexmldoc)
+            } else {
+                DomainStart(rexmldoc)
+            }
         }
     }
 }
@@ -814,7 +875,7 @@ func main() {
                     DomainStop(nodes.Network_nodes[i].Name +"-re")
                     DomainStop(nodes.Network_nodes[i].Name +"-pfe")
                 }else if nodes.Network_nodes[i].VnfType == "vsrx" {
-                    DomainStop(nodes.Network_nodes[i].Name +"-re")
+                    DomainStop(nodes.Network_nodes[i].Name)
                 }
             }
             fmt.Printf("Deleting bridges\n")

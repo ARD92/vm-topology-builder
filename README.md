@@ -33,13 +33,47 @@ Hence moved to using go-libvirt by digital ocean which handles better as a pure 
 ### Directory structure:
 - templates: templates for each vnf based on dir. genxml will store the files in respective directory
 - build: creates a directory based on topology names with respective images copied and is referenced in domain xml. Images from source path is copied to here.
-- images: original image
-- topologies: store all topologies yaml files which can be referenced
+- topologies: store all topologies yaml files which can be referenced. 
+- topology-diagram: application to generate topology diagram based on the input topology file. 
 - vm-topo.go : main file
 
+
+```
+├── README.md
+├── build
+├── templates
+│   ├── ipfabric-test
+│   │   ├── leaf1_vqfx-pfe.xml
+│   │   ├── leaf1_vqfx-re.xml
+│   │   ├── leaf2_vqfx-pfe.xml
+│   │   ├── leaf2_vqfx-re.xml
+│   │   ├── leaf3_vqfx-pfe.xml
+│   │   ├── leaf3_vqfx-re.xml
+│   │   ├── spine1_vqfx-pfe.xml
+│   │   ├── spine1_vqfx-re.xml
+│   │   ├── spine2_vqfx-pfe.xml
+│   │   └── spine2_vqfx-re.xml
+│   └── vsrx-test
+│       ├── vsrx1_vsrx.xml
+│       └── vsrx2_vsrx.xml
+├── topologies
+│   ├── ipfabric-test.yaml
+│   ├── topology.yaml
+│   └── vsrx-test.yaml
+├── topology-diagram
+│   ├── README.md
+│   ├── drawthenet_boiler.yaml
+│   └── generate_topology_diagram.py
+└── vm-topo.go
+```
 Note: currently relative path doesnt work while executing the application. Place the topology file along with the binary when executing.
 
 ### Sample topology file 
+
+* vQFX requires both RE and PFE params 
+* vMX requires both RE and PFE params
+* vSRX requires only RE params since it is a single image. The PFE params can be left blank.
+
 ```
 ---
 network_nodes:
@@ -234,3 +268,4 @@ using go get, install all necessary packages
 ```
 go build vm-topo.go
 ```
+Run the application based on the above steps

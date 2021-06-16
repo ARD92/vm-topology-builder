@@ -58,11 +58,9 @@ var BASE_VSRX_EXT_MAC_ADDRESS string = "02:aa:01:31:00:00"
 
 const LISTEN_ADDRESS string = "127.0.0.1"
 const BRIDGE_MTU int = 9000
-const BRIDGE_MGMT string = "mgmt_ext"
+const BRIDGE_MGMT string = "BR_MGMT"
 const VQFX_BRIDGE_RES string = "vqfx_res"
 
-const VMX_HDD string = "vmxhdd.img"
-const VMX_METADATA_USB_RE string = "metadata-usb-re.img"
 
 /*
 Struct to parse input yaml file
@@ -163,7 +161,7 @@ func CreateBridges(node Nodes) {
         } else if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Print("Creating int and ext bridges for VMX [WIP]\n")
             qattr_int := netlink.NewLinkAttrs()
-            qattr_int.Name = node.Network_nodes[i].Name+"_int"
+            qattr_int.Name = "br-int-"+node.Network_nodes[i].Name
             qattr_int.MTU = BRIDGE_MTU
             qbattr_int := &netlink.Bridge{LinkAttrs: qattr_int}
             err_int := netlink.LinkAdd(qbattr_int)
@@ -251,7 +249,7 @@ func DeleteBridges(node Nodes) {
         } else if node.Network_nodes[i].VnfType == "vmx" {
             fmt.Printf("Deleting vmx int and vmx ext bridges\n")
             qattr_int := netlink.NewLinkAttrs()
-            qattr_int.Name = node.Network_nodes[i].Name+"_int"
+            qattr_int.Name = "br-int-"+node.Network_nodes[i].Name
             qbattr_int := &netlink.Bridge {LinkAttrs: qattr_int}
             qsattr_int, serr := netlink.LinkByName(qattr_int.Name)
             if serr != nil {
@@ -774,8 +772,8 @@ func TemplateVmx(node Node, devid int)(*libvirtxml.Domain, *libvirtxml.Domain){
     c2 := NewController("pci", uint(0), "pci-root","pci.0", nint, nint, nint, nint, "")
 
     c1p := NewController("pci",uint(0), "pci-root","pci.0",nint, nint, nint, nint, "")
-    c2p := NewController("usb", uint(0), "piix3-uhci", "usb",uint(0x0000), uint(0x00),uint(0x01), uint(0x2), "")
-    c3p := NewController("ide", uint(0), "", "ide",uint(0x0000), uint(0x00),uint(0x01), uint(0x1), "")
+    //c2p := NewController("usb", uint(0), "piix3-uhci", "usb",uint(0x0000), uint(0x00),uint(0x01), uint(0x2), "")
+    //c3p := NewController("ide", uint(0), "", "ide",uint(0x0000), uint(0x00),uint(0x01), uint(0x1), "")
 
     s1 := NewSerial(uint(0), node.Re_port, "serial0")
     s1p := NewSerial(uint(0), node.Pfe_port, "serial0")
@@ -797,7 +795,9 @@ func TemplateVmx(node Node, devid int)(*libvirtxml.Domain, *libvirtxml.Domain){
     domcfg.Devices.Consoles = append(domcfg.Devices.Consoles, co)
     domcfg.Devices.Graphics  = append(domcfg.Devices.Graphics, g1)
     domcfg.Devices.Videos = append(domcfg.Devices.Videos, v1)
-    dompfecfg.Devices.Controllers = append(dompfecfg.Devices.Controllers, c1p, c2p, c3p)
+
+
+    dompfecfg.Devices.Controllers = append(dompfecfg.Devices.Controllers, c1p)
     dompfecfg.Devices.Serials = append(dompfecfg.Devices.Serials, s1p)
     dompfecfg.Devices.Consoles = append(dompfecfg.Devices.Consoles,cop)
     dompfecfg.Devices.Inputs = append(dompfecfg.Devices.Inputs, i1, i2)
@@ -805,22 +805,24 @@ func TemplateVmx(node Node, devid int)(*libvirtxml.Domain, *libvirtxml.Domain){
     dompfecfg.Devices.Videos = append(dompfecfg.Devices.Videos, v1)
 
     hdevid := fmt.Sprintf("%02x", devid+1)
+
     /* Add EXT, INT bridges for VCP */
     intf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_EXT_MAC_ADDRESS,"00")+hdevid,
                             BRIDGE_MGMT, node.Name+"_re-ext","virtio", uint(0x0000),
                             uint(0x00), uint(0x03), uint(0x0))
     intf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_INT_MAC_ADDRESS, "00")+hdevid,
-                            node.Name+"_int", node.Name+"_re-int","virtio",uint(0x0000),
+                            "br-int-"+node.Name, node.Name+"_re-int","virtio",uint(0x0000),
                             uint(0x00), uint(0x04), uint(0x00))
     domcfg.Devices.Interfaces = append(domcfg.Devices.Interfaces, intf_ext, intf_int)
+
 
     /* Add EXT, INT briges for VFP */
     pintf_ext := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_EXT_MAC_ADDRESS,"00:00")+hdevid+":"+hdevid,
                                 BRIDGE_MGMT, node.Name+"_pfe-ext","virtio",uint(0x0000),
-                                uint(0x00), uint(0x05), uint(0x0))
+                                uint(0x00), uint(0x03), uint(0x0))
     pintf_int := NewNetworkIntf(strings.TrimSuffix(BASE_VMX_INT_MAC_ADDRESS, "00:00")+hdevid+":"+hdevid,
-                                node.Name+"_int",node.Name+"_pfe-int","virtio", uint(0x0000),
-                                uint(0x00), uint(0x06), uint(0x00))
+                                "br-int-"+node.Name,node.Name+"_pfe-int","virtio", uint(0x0000),
+                                uint(0x00), uint(0x04), uint(0x00))
     dompfecfg.Devices.Interfaces = append(dompfecfg.Devices.Interfaces, pintf_ext, pintf_int)
 
     /* Add regular ge interfaces to the PFE */

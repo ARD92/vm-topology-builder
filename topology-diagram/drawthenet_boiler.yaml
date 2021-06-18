@@ -1,0 +1,19 @@
+# Author: Aravind Prabhakar
+# Version 1.0
+# Boiler plate which would be used to feed values from topology file 
+# Once fed, a different copy would be saved with the same name as topology file
+
+diagram:
+  fill: none
+  gridLines: false
+title:
+  text: 
+  fill: none
+  logoFill: Juniper Networks
+  author: Aravind Prabhakar
+iconsDefaults: &iconsDefaults
+  icon: router
+  iconFamily: cisco
+  fill: none
+icons:
+connections:

@@ -9,7 +9,7 @@ diagram:
 title:
   text: 
   fill: none
-  logoFill: Juniper Networks
+  logoFill: none
   author: Aravind Prabhakar
 iconsDefaults: &iconsDefaults
   icon: router
@@ -17,3 +17,6 @@ iconsDefaults: &iconsDefaults
   fill: none
 icons:
 connections:
+groups:
+  # append groups manually based on needs. members are vals in icons
+  #pod1: { fill: gray, color:black, stroke:black, name: pod1, members: [vm2, vm2] }

@@ -1,0 +1,136 @@
+connections:
+- endpoints:
+  - spine1:ge-0.0.0
+  - leaf1:ge-0.0.0
+- endpoints:
+  - spine1:ge-0.0.2
+  - leaf2:ge-0.0.0
+- endpoints:
+  - spine1:ge-0.0.1
+  - leaf3:ge-0.0.0
+- endpoints:
+  - spine2:ge-0.0.1
+  - leaf1:ge-0.0.1
+- endpoints:
+  - spine2:ge-0.0.0
+  - leaf2:ge-0.0.1
+- endpoints:
+  - spine2:ge-0.0.2
+  - leaf3:ge-0.0.1
+- endpoints:
+  - leaf1:ge-0.0.0
+  - spine1:ge-0.0.0
+- endpoints:
+  - leaf1:ge-0.0.1
+  - spine2:ge-0.0.1
+- endpoints:
+  - leaf1:ge-0.0.2
+  - vm1:eth0
+- endpoints:
+  - leaf1:ge-0.0.3
+  - vm2:eth0
+- endpoints:
+  - leaf2:ge-0.0.0
+  - spine1:ge-0.0.2
+- endpoints:
+  - leaf2:ge-0.0.1
+  - spine2:ge-0.0.0
+- endpoints:
+  - leaf2:ge-0.0.2
+  - vm3:eth0
+- endpoints:
+  - leaf2:ge-0.0.3
+  - vm4:eth0
+- endpoints:
+  - leaf3:ge-0.0.0
+  - spine1:ge-0.0.1
+- endpoints:
+  - leaf3:ge-0.0.1
+  - spine2:ge-0.0.2
+- endpoints:
+  - leaf3:ge-0.0.2
+  - vm5:eth0
+- endpoints:
+  - leaf3:ge-0.0.3
+  - vm6:eth0
+diagram:
+  fill: none
+  gridLines: false
+groups: null
+icons:
+  leaf1:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 2
+    y: 6
+  leaf2:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 4
+    y: 6
+  leaf3:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 6
+    y: 6
+  spine1:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 3
+    y: 8
+  spine2:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 6
+    y: 8
+  vm1:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 2
+    y: 4
+  vm2:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 3
+    y: 4
+  vm3:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 4
+    y: 4
+  vm4:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 5
+    y: 4
+  vm5:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 6
+    y: 4
+  vm6:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 7
+    y: 4
+iconsDefaults:
+  fill: none
+  icon: router
+  iconFamily: cisco
+title:
+  author: Aravind Prabhakar
+  fill: none
+  logoFill: none
+  name: ipfabric-test
+  text: null

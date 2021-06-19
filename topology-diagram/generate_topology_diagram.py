@@ -37,7 +37,8 @@ def GenDraw(mapp):
     connections = []
     
     for i in range(len(mapp_topo["network_nodes"])):
-        icons.append(mapp_topo["network_nodes"][i]["name"])
+        if i not in icons:
+            icons.append(mapp_topo["network_nodes"][i]["name"])
         for j in range(len(mapp_topo["network_nodes"][i]["link"])):
             endpoint = []
             if mapp_topo["network_nodes"][i]["link"][j]["intf"].startswith("ge-" or "et-" or "xe-"):
@@ -45,7 +46,7 @@ def GenDraw(mapp):
                 endpoint.append(conn1)
                 print(conn1)
             if mapp_topo["network_nodes"][i]["link"][j]["intf"].startswith("eth"):
-                conn1 = str(mapp_topo["network_nodes"][i]["link"][j]["intf"][4:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["intf"][:3])
+                conn1 = str(mapp_topo["network_nodes"][i]["link"][j]["intf"][4:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["intf"][:4])
                 print(conn1)
                 endpoint.append(conn1)
                 if mapp_topo["network_nodes"][i]["link"][j]["intf"][4:] not in icons:
@@ -55,7 +56,7 @@ def GenDraw(mapp):
                 endpoint.append(conn2)
                 print(conn2)
             if mapp_topo["network_nodes"][i]["link"][j]["peerintf"].startswith("eth"):
-                conn2 = str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][5:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][:3])
+                conn2 = str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][5:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][:4])
                 print(conn2)
                 endpoint.append(conn2)
                 if mapp_topo["network_nodes"][i]["link"][j]["peerintf"][5:] not in icons:
@@ -78,7 +79,7 @@ def ModifyBoilerFile(icons, connections):
     for i in icons:
         #print(i)
         icon_vals_int = {}
-        if i == "vm" or "server" :
+        if (i.startswith("vm" or "server")) :
             icon_vals_int["icon"] = "terminal"
         else:
             icon_vals_int["icon"]="router"
@@ -104,6 +105,9 @@ def main():
         mapp = yaml.safe_load(f)
     icons, connections = GenDraw(mapp)
     ModifyBoilerFile(icons, connections)
-    print("end the x and y axis manually ")
+    print("end the x and y axis manually \n ")
+    print(" copy the saved yaml into go.drawthe.net and render the diagram")
+
+
 if __name__ == "__main__":
     main()

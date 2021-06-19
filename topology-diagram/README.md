@@ -13,4 +13,7 @@ The drawit yaml file is saved as drawit_<topology_name>.yaml
 
 ## WIP
 - the x and y axis have to be manually edited
-- if the connection doesnt exist for the other direction, then the diagram isnt rendered. 
+- if compute instances need to be referred, then use either "server" or "vm"
+- the interface naming convention has to be
+    ge-x.y.z , xe-x.y.z, et-x.y.z for the vMX, vSRX, vQFX
+    ethx , ensx for vms/server representations

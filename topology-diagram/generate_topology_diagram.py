@@ -25,6 +25,9 @@ file from topology file
 interface name should be of format <ge/xe/et>-<0.0.0>-<devicename>
 example: ge-0.0.0-vmx1
 return [devA, devB], [[devA: portA, devB: PortB ], [],[]]
+
+vm should be defined as either "vm" or "server". Example vm1
+and ports should be either "eth" or "ens". Example eth0, ens0
 """
 def GenDraw(mapp):
     with open(args.TOPOLOGY, 'r') as r:
@@ -45,6 +48,8 @@ def GenDraw(mapp):
                 conn1 = str(mapp_topo["network_nodes"][i]["link"][j]["intf"][4:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["intf"][:3])
                 print(conn1)
                 endpoint.append(conn1)
+                if mapp_topo["network_nodes"][i]["link"][j]["intf"][4:] not in icons:
+                    icons.append(mapp_topo["network_nodes"][i]["link"][j]["intf"][4:])
             if mapp_topo["network_nodes"][i]["link"][j]["peerintf"].startswith("ge-" or "et-" or "xe-"):
                 conn2 = str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][9:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][:8])
                 endpoint.append(conn2)
@@ -53,6 +58,8 @@ def GenDraw(mapp):
                 conn2 = str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][5:])+":"+str(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][:3])
                 print(conn2)
                 endpoint.append(conn2)
+                if mapp_topo["network_nodes"][i]["link"][j]["peerintf"][5:] not in icons:
+                    icons.append(mapp_topo["network_nodes"][i]["link"][j]["peerintf"][5:])
             connections.append(endpoint)
     return icons, connections
  
@@ -71,7 +78,10 @@ def ModifyBoilerFile(icons, connections):
     for i in icons:
         #print(i)
         icon_vals_int = {}
-        icon_vals_int["icon"]="router"
+        if i == "vm" or "server" :
+            icon_vals_int["icon"] = "terminal"
+        else:
+            icon_vals_int["icon"]="router"
         icon_vals_int["iconFamily"]="cisco"
         icon_vals_int["fill"]="none"
         icon_vals_int["x"]=2

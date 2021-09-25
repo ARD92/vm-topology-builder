@@ -1,0 +1,229 @@
+
+## Last commit: 2021-09-22 00:53:27 UTC by root
+version 21.3R1.6;
+groups {
+    MTU {
+        interfaces {
+            <*> {
+                mtu 9000;
+                unit 0 {
+                    family iso;
+                }
+            }
+        }
+    }
+}
+apply-groups MTU;
+system {
+    host-name R7;
+    root-authentication {
+        encrypted-password "$6$YLoXJQ1F$8iohhOPRBkbSD1J302vKKbDK4/JqoACai2j69I.MHlMXClcWeXzTwa4uHu98nSNKdBQyUtUOEjaqWoevfqhQm."; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+        }
+    }
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+logical-systems {
+    CE2 {
+        interfaces {
+            lt-0/0/10 {
+                unit 1 {
+                    encapsulation ethernet;
+                    peer-unit 0;
+                    family inet {
+                        address 172.16.2.2/30;
+                    }
+                }
+            }
+        }
+        routing-options {
+            static {
+                route 172.16.1.2/32 next-hop 172.16.2.1;
+            }
+        }
+    }
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            tunnel-services {
+                bandwidth 1g;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/1 {
+        unit 0 {
+            family inet6 {
+                address abcd:1:1:11::2/64;
+            }
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet6 {
+                address abcd:1:1:15::2/64;
+            }
+        }
+    }
+    lt-0/0/10 {
+        unit 0 {
+            encapsulation ethernet;
+            peer-unit 1;
+            family inet {
+                address 172.16.2.1/30;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.102.144.7/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM61398CB428;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 7.7.7.7/32;
+            }
+            family iso {
+                address 49.0001.0007.0707.0700;
+            }
+            family inet6 {
+                address 2001:db8:7:255::7/128;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement pplb {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement term1 {
+        from {
+            protocol direct;
+            route-filter 172.16.2.0/30 exact;
+        }
+        then {
+            next-hop 2001:db8:0:a7::d71;
+            accept;
+        }
+    }
+}
+routing-options {
+    source-packet-routing {
+        srv6 {
+            locator myloc 2001:db8:0:a7::/64;
+        }
+    }
+    router-id 7.7.7.7;
+    autonomous-system 65550;
+    forwarding-table {
+        export pplb;
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    bgp {
+        group RR {
+            type internal;
+            local-address 2001:db8:7:255::7;
+            export term1;
+            neighbor 2001:db8:2:255::2 {
+                family inet {
+                    unicast {
+                        extended-nexthop;
+                    }
+                }
+            }
+        }
+    }
+    isis {
+        interface ge-0/0/1.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a7::1a73 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface ge-0/0/2.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a7::1a76 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface lo0.0 {
+            passive;
+        }
+        source-packet-routing {
+            srv6 {
+                locator myloc {
+                    end-sid 2001:db8:0:a7::d71 {
+                        flavor {
+                            usd;
+                        }
+                    }
+                }
+            }
+        }
+        level 1 disable;
+    }
+}

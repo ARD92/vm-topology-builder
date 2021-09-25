@@ -1,0 +1,162 @@
+connections:
+- endpoints:
+  - R0:ge-0.0.0
+  - R0:ge-0.0.3
+- endpoints:
+  - R0:ge-0.0.1
+  - R1:ge-0.0.1
+- endpoints:
+  - R0:ge-0.0.2
+  - R4:ge-0.0.2
+- endpoints:
+  - R1:ge-0.0.0
+  - R2:ge-0.0.0
+- endpoints:
+  - R1:ge-0.0.1
+  - R0:ge-0.0.1
+- endpoints:
+  - R1:ge-0.0.2
+  - R4:ge-0.0.1
+- endpoints:
+  - R1:ge-0.0.3
+  - R5:ge-0.0.2
+- endpoints:
+  - R2:ge-0.0.0
+  - R1:ge-0.0.0
+- endpoints:
+  - R2:ge-0.0.1
+  - R4:ge-0.0.3
+- endpoints:
+  - R2:ge-0.0.2
+  - R5:ge-0.0.1
+- endpoints:
+  - R2:ge-0.0.3
+  - R6:ge-0.0.1
+- endpoints:
+  - R2:ge-0.0.4
+  - R3:ge-0.0.0
+- endpoints:
+  - R3:ge-0.0.0
+  - R2:ge-0.0.4
+- endpoints:
+  - R3:ge-0.0.1
+  - R7:ge-0.0.1
+- endpoints:
+  - R3:ge-0.0.2
+  - R5:ge-0.0.4
+- endpoints:
+  - R3:ge-0.0.3
+  - R6:ge-0.0.0
+- endpoints:
+  - R7:ge-0.0.0
+  - R7:ge-0.0.3
+- endpoints:
+  - R7:ge-0.0.1
+  - R3:ge-0.0.1
+- endpoints:
+  - R7:ge-0.0.2
+  - R6:ge-0.0.2
+- endpoints:
+  - R4:ge-0.0.0
+  - R5:ge-0.0.0
+- endpoints:
+  - R4:ge-0.0.1
+  - R1:ge-0.0.2
+- endpoints:
+  - R4:ge-0.0.2
+  - R0:ge-0.0.2
+- endpoints:
+  - R4:ge-0.0.3
+  - R2:ge-0.0.1
+- endpoints:
+  - R5:ge-0.0.0
+  - R4:ge-0.0.0
+- endpoints:
+  - R5:ge-0.0.1
+  - R2:ge-0.0.2
+- endpoints:
+  - R5:ge-0.0.2
+  - R1:ge-0.0.3
+- endpoints:
+  - R5:ge-0.0.3
+  - R6:ge-0.0.3
+- endpoints:
+  - R5:ge-0.0.4
+  - R3:ge-0.0.2
+- endpoints:
+  - R6:ge-0.0.0
+  - R3:ge-0.0.3
+- endpoints:
+  - R6:ge-0.0.1
+  - R2:ge-0.0.3
+- endpoints:
+  - R6:ge-0.0.2
+  - R7:ge-0.0.2
+- endpoints:
+  - R6:ge-0.0.3
+  - R5:ge-0.0.3
+diagram:
+  fill: none
+  gridLines: false
+groups: null
+icons:
+  R0:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 0
+    y: 5
+  R1:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 2
+    y: 8
+  R2:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 4
+    y: 8
+  R3:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 6
+    y: 8
+  R4:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 2
+    y: 2
+  R5:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 4
+    y: 2
+  R6:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 6
+    y: 2
+  R7:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 8
+    y: 5
+iconsDefaults:
+  fill: none
+  icon: router
+  iconFamily: cisco
+  iconFill: darkslategrey
+  iconStroke: lightgrey
+title:
+  author: Aravind Prabhakar
+  fill: none
+  logoFill: none
+  name: srv6
+  text: null

@@ -1,0 +1,48 @@
+connections:
+- endpoints:
+  - vmx11:ge-0.0.0
+  - vsrx11:ge-0.0.0
+- endpoints:
+  - vsrx11:ge-0.0.0
+  - vmx11:ge-0.0.0
+- endpoints:
+  - vsrx11:ge-0.0.1
+  - vmx21:ge-0.0.1
+- endpoints:
+  - vmx21:ge-0.0.1
+  - vsrx11:ge-0.0.1
+diagram:
+  fill: none
+  gridLines: false
+groups: null
+icons:
+  vmx11:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 2
+    y: 0
+  vmx21:
+    fill: none
+    icon: terminal
+    iconFamily: cisco
+    x: 6
+    y: 0
+  vsrx11:
+    fill: none
+    icon: router
+    iconFamily: cisco
+    x: 4
+    y: 8
+iconsDefaults:
+  fill: none
+  icon: router
+  iconFamily: cisco
+  iconFill: darkslategrey
+  iconStroke: lightgrey
+title:
+  author: Aravind Prabhakar
+  fill: none
+  logoFill: none
+  name: vsrx-mobility
+  text: null

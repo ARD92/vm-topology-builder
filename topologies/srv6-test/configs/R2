@@ -1,0 +1,262 @@
+
+## Last commit: 2021-09-22 00:29:05 UTC by root
+version 21.3R1.6;
+groups {
+    MTU {
+        interfaces {
+            <*> {
+                mtu 9000;
+                unit 0 {
+                    family iso;
+                }
+            }
+        }
+    }
+}
+apply-groups MTU;
+system {
+    host-name R2;
+    root-authentication {
+        encrypted-password "$6$TEJWSETu$HgZe7O9cK8BQ/izCQ9ONUuV4i1mcToDNzsM85/wtRI4W21ipAJW8o7obkJVKkqDwuiAzp5n0a5uO8iV2AQWe//"; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+        }
+    }
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 192.168.1.2/30;
+            }
+            family inet6 {
+                address abcd:1:1:12::2/64;
+                address abcd:1:1:1::2/64;
+            }
+        }
+    }
+    ge-0/0/1 {
+        unit 0 {
+            family inet6 {
+                address abcd::192.168.5.1/64;
+                address abcd:1:1:5::1/64;
+            }
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet6 {
+                address abcd::192.168.6.1/64;
+                address abcd:1:1:6::1/64;
+            }
+        }
+    }
+    ge-0/0/3 {
+        unit 0 {
+            family inet6 {
+                address abcd::192.168.7.1/64;
+                address abcd:1:1:7::1/64;
+            }
+        }
+    }
+    ge-0/0/4 {
+        unit 0 {
+            family inet6 {
+                address abcd::192.168.8.1/64;
+                address abcd:1:1:8::1/64;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.102.144.2/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM61398CABF7;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 2.2.2.2/32;
+            }
+            family iso {
+                address 49.0001.0002.0202.0200;
+            }
+            family inet6 {
+                address 2001:db8:2:255::2/128;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement pplb {
+        then {
+            load-balance per-packet;
+        }
+    }
+}
+routing-options {
+    source-packet-routing {
+        srv6 {
+            locator myloc 2001:db8:0:a2::/64;
+        }
+    }
+    router-id 2.2.2.2;
+    autonomous-system 65550;
+    forwarding-table {
+        export pplb;
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    bgp {
+        group RR {
+            type internal;
+            local-address 2001:db8:2:255::2;
+            cluster 2.2.2.2;
+            neighbor 2001:db8:10:255::10 {
+                family inet {
+                    unicast {
+                        extended-nexthop;
+                    }
+                }
+            }
+            neighbor 2001:db8:7:255::7 {
+                family inet {
+                    unicast {
+                        extended-nexthop;
+                    }
+                }
+            }
+        }
+    }
+    isis {
+        interface ge-0/0/0.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a2::1a21 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface ge-0/0/1.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a2::1a23 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface ge-0/0/2.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a2::1a24 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface ge-0/0/3.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a2::1a25 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface ge-0/0/4.0 {
+            level 2 {
+                srv6-adjacency-segment {
+                    protected {
+                        locator myloc {
+                            end-x-sid 2001:db8:0:a2::1a26 {
+                                flavor psp;
+                            }
+                        }
+                    }
+                }
+            }
+            node-link-protection;
+            point-to-point;
+        }
+        interface lo0.0 {
+            passive;
+        }
+        source-packet-routing {
+            srv6 {
+                locator myloc {
+                    end-sid 2001:db8:0:a2::d21 {
+                        flavor {
+                            usd;
+                        }
+                    }
+                }
+            }
+        }
+        level 1 disable;
+    }
+}

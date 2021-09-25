@@ -1,0 +1,52 @@
+
+set version 21.3R1.6
+set groups MTU interfaces <*> mtu 9000
+set groups MTU interfaces <*> unit 0 family iso
+set system host-name R4
+set system root-authentication encrypted-password "$6$co3T1HWw$DDtwr1uhZ5rRZwiBbMn3Mv28qDw8Teu7SddqQMx6ySxy5AV9ZEPk67pLVfcACwJH9bQgEczIT84J7VmUOfBbf."
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 family iso
+set interfaces ge-0/0/0 unit 0 family inet6 address abcd:1:1:12::1/64
+set interfaces ge-0/0/1 unit 0 family iso
+set interfaces ge-0/0/1 unit 0 family inet6 address abcd:1:1:3::2/64
+set interfaces ge-0/0/2 unit 0 family iso
+set interfaces ge-0/0/2 unit 0 family inet6 address abcd:1:1:13::1/64
+set interfaces ge-0/0/3 unit 0 family iso
+set interfaces ge-0/0/3 unit 0 family inet6 address abcd:1:1:6::2/64
+set interfaces fxp0 unit 0 family inet address 10.102.144.4/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61398CB604
+set interfaces lo0 unit 0 family inet address 4.4.4.4/32
+set interfaces lo0 unit 0 family iso address 49.0001.0004.0404.0400
+set interfaces lo0 unit 0 family inet6 address 2001:db8:4:255::4/128
+set policy-options policy-statement pplb then load-balance per-packet
+set routing-options source-packet-routing srv6 locator myloc 2001:db8:0:a4::/64
+set routing-options router-id 4.4.4.4
+set routing-options forwarding-table export pplb
+set protocols router-advertisement interface fxp0.0
+set protocols isis interface ge-0/0/0.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a4::1a40 flavor psp
+set protocols isis interface ge-0/0/0.0 node-link-protection
+set protocols isis interface ge-0/0/0.0 point-to-point
+set protocols isis interface ge-0/0/1.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a4::1a41 flavor psp
+set protocols isis interface ge-0/0/1.0 node-link-protection
+set protocols isis interface ge-0/0/1.0 point-to-point
+set protocols isis interface ge-0/0/2.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a4::1a42 flavor psp
+set protocols isis interface ge-0/0/2.0 node-link-protection
+set protocols isis interface ge-0/0/2.0 point-to-point
+set protocols isis interface ge-0/0/3.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a4::1a45 flavor psp
+set protocols isis interface ge-0/0/3.0 node-link-protection
+set protocols isis interface ge-0/0/3.0 point-to-point
+set protocols isis source-packet-routing srv6 locator myloc end-sid 2001:db8:0:a4::d41 flavor usd
+set protocols isis level 1 disable

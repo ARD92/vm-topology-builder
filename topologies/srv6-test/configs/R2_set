@@ -1,0 +1,66 @@
+
+set version 21.3R1.6
+set groups MTU interfaces <*> mtu 9000
+set groups MTU interfaces <*> unit 0 family iso
+set apply-groups MTU
+set system host-name R2
+set system root-authentication encrypted-password "$6$TEJWSETu$HgZe7O9cK8BQ/izCQ9ONUuV4i1mcToDNzsM85/wtRI4W21ipAJW8o7obkJVKkqDwuiAzp5n0a5uO8iV2AQWe//"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 family inet address 192.168.1.2/30
+set interfaces ge-0/0/0 unit 0 family inet6 address abcd:1:1:12::2/64
+set interfaces ge-0/0/0 unit 0 family inet6 address abcd:1:1:1::2/64
+set interfaces ge-0/0/1 unit 0 family inet6 address abcd::192.168.5.1/64
+set interfaces ge-0/0/1 unit 0 family inet6 address abcd:1:1:5::1/64
+set interfaces ge-0/0/2 unit 0 family inet6 address abcd::192.168.6.1/64
+set interfaces ge-0/0/2 unit 0 family inet6 address abcd:1:1:6::1/64
+set interfaces ge-0/0/3 unit 0 family inet6 address abcd::192.168.7.1/64
+set interfaces ge-0/0/3 unit 0 family inet6 address abcd:1:1:7::1/64
+set interfaces ge-0/0/4 unit 0 family inet6 address abcd::192.168.8.1/64
+set interfaces ge-0/0/4 unit 0 family inet6 address abcd:1:1:8::1/64
+set interfaces fxp0 unit 0 family inet address 10.102.144.2/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61398CABF7
+set interfaces lo0 unit 0 family inet address 2.2.2.2/32
+set interfaces lo0 unit 0 family iso address 49.0001.0002.0202.0200
+set interfaces lo0 unit 0 family inet6 address 2001:db8:2:255::2/128
+set policy-options policy-statement pplb then load-balance per-packet
+set routing-options source-packet-routing srv6 locator myloc 2001:db8:0:a2::/64
+set routing-options router-id 2.2.2.2
+set routing-options autonomous-system 65550
+set routing-options forwarding-table export pplb
+set protocols router-advertisement interface fxp0.0
+set protocols bgp group RR type internal
+set protocols bgp group RR local-address 2001:db8:2:255::2
+set protocols bgp group RR cluster 2.2.2.2
+set protocols bgp group RR neighbor 2001:db8:10:255::10 family inet unicast extended-nexthop
+set protocols bgp group RR neighbor 2001:db8:7:255::7 family inet unicast extended-nexthop
+set protocols isis interface ge-0/0/0.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a2::1a21 flavor psp
+set protocols isis interface ge-0/0/0.0 node-link-protection
+set protocols isis interface ge-0/0/0.0 point-to-point
+set protocols isis interface ge-0/0/1.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a2::1a23 flavor psp
+set protocols isis interface ge-0/0/1.0 node-link-protection
+set protocols isis interface ge-0/0/1.0 point-to-point
+set protocols isis interface ge-0/0/2.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a2::1a24 flavor psp
+set protocols isis interface ge-0/0/2.0 node-link-protection
+set protocols isis interface ge-0/0/2.0 point-to-point
+set protocols isis interface ge-0/0/3.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a2::1a25 flavor psp
+set protocols isis interface ge-0/0/3.0 node-link-protection
+set protocols isis interface ge-0/0/3.0 point-to-point
+set protocols isis interface ge-0/0/4.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a2::1a26 flavor psp
+set protocols isis interface ge-0/0/4.0 node-link-protection
+set protocols isis interface ge-0/0/4.0 point-to-point
+set protocols isis interface lo0.0 passive
+set protocols isis source-packet-routing srv6 locator myloc end-sid 2001:db8:0:a2::d21 flavor usd
+set protocols isis level 1 disable

@@ -1,0 +1,59 @@
+
+set version 21.3R1.6
+set groups MTU interfaces <*> mtu 9000
+set groups MTU interfaces <*> unit 0 family iso
+set apply-groups MTU
+set system host-name R7
+set system root-authentication encrypted-password "$6$YLoXJQ1F$8iohhOPRBkbSD1J302vKKbDK4/JqoACai2j69I.MHlMXClcWeXzTwa4uHu98nSNKdBQyUtUOEjaqWoevfqhQm."
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set logical-systems CE2 interfaces lt-0/0/10 unit 1 encapsulation ethernet
+set logical-systems CE2 interfaces lt-0/0/10 unit 1 peer-unit 0
+set logical-systems CE2 interfaces lt-0/0/10 unit 1 family inet address 172.16.2.2/30
+set logical-systems CE2 routing-options static route 172.16.1.2/32 next-hop 172.16.2.1
+set chassis fpc 0 pic 0 tunnel-services bandwidth 1g
+set interfaces ge-0/0/1 unit 0 family inet6 address abcd:1:1:11::2/64
+set interfaces ge-0/0/2 unit 0 family inet6 address abcd:1:1:15::2/64
+set interfaces lt-0/0/10 unit 0 encapsulation ethernet
+set interfaces lt-0/0/10 unit 0 peer-unit 1
+set interfaces lt-0/0/10 unit 0 family inet address 172.16.2.1/30
+set interfaces fxp0 unit 0 family inet address 10.102.144.7/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61398CB428
+set interfaces lo0 unit 0 family inet address 7.7.7.7/32
+set interfaces lo0 unit 0 family iso address 49.0001.0007.0707.0700
+set interfaces lo0 unit 0 family inet6 address 2001:db8:7:255::7/128
+set policy-options policy-statement pplb then load-balance per-packet
+set policy-options policy-statement term1 from protocol direct
+set policy-options policy-statement term1 from route-filter 172.16.2.0/30 exact
+set policy-options policy-statement term1 then next-hop 2001:db8:0:a7::d71
+set policy-options policy-statement term1 then accept
+set routing-options source-packet-routing srv6 locator myloc 2001:db8:0:a7::/64
+set routing-options router-id 7.7.7.7
+set routing-options autonomous-system 65550
+set routing-options forwarding-table export pplb
+set protocols router-advertisement interface fxp0.0
+set protocols bgp group RR type internal
+set protocols bgp group RR local-address 2001:db8:7:255::7
+set protocols bgp group RR export term1
+set protocols bgp group RR neighbor 2001:db8:2:255::2 family inet unicast extended-nexthop
+set protocols isis interface ge-0/0/1.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a7::1a73 flavor psp
+set protocols isis interface ge-0/0/1.0 node-link-protection
+set protocols isis interface ge-0/0/1.0 point-to-point
+set protocols isis interface ge-0/0/2.0 level 2 srv6-adjacency-segment protected locator myloc end-x-sid 2001:db8:0:a7::1a76 flavor psp
+set protocols isis interface ge-0/0/2.0 node-link-protection
+set protocols isis interface ge-0/0/2.0 point-to-point
+set protocols isis interface lo0.0 passive
+set protocols isis source-packet-routing srv6 locator myloc end-sid 2001:db8:0:a7::d71 flavor usd
+set protocols isis level 1 disable

@@ -1,0 +1,67 @@
+---
+network_nodes:
+  -
+    name: "vmx11"
+    imagePath: "/home/aprabh/vmx_images/"
+    reImage: "junos-vmx-x86-64-18.4R1-S7.1.qcow2"
+    pfeImage: "vFPC-20200409.img"
+    metadataImage: "metadata-usb-re.img"
+    vhddImage: "vmxhdd.img"
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8618
+    pfe_port: 8628
+    link:
+      # name is user defined. This will be used to create the bridge name
+      - name: "vmx11_vsrx11"
+        intf: "ge-0.0.0-vmx11"
+        peerintf: "ge-0.0.0-vsrx11"
+  -
+    name: "vsrx11"
+    imagePath: "/home/aprabh/vsrx_images/"
+    reImage: "junos-vsrx3-x86-64-20.4R1.12.qcow"
+    pfeImage: ""
+    metadataImage: ""
+    vhddImage: ""
+    re_memory: 4096
+    pfe_memory:
+    vnfType: "vsrx"
+    re_cores: 2
+    pfe_cores:
+    re_vcpu: 2
+    pfe_vcpu:
+    re_port: 8619
+    pfe_port:
+    link:
+      - name: "vmx11_vsrx11"
+        intf: "ge-0.0.0-vsrx11"
+        peerintf: "ge-0.0.0-vmx11"
+      - name: "vsrx11_vmx21"
+        intf: "ge-0.0.1-vsrx11"
+        peerintf: "ge-0.0.1-vmx21"
+
+  -
+    name: "vmx21"
+    imagePath: "/home/aprabh/vmx_images/"
+    reImage: "junos-vmx-x86-64-18.4R1-S7.1.qcow2"
+    pfeImage: "vFPC-20200409.img"
+    metadataImage: "metadata-usb-re.img"
+    vhddImage: "vmxhdd.img"
+    re_memory: 1024
+    pfe_memory: 4096
+    vnfType: "vmx"
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8631
+    pfe_port: 8629
+    link:
+      - name: "vsrx11_vmx21"
+        intf: "ge-0.0.1-vmx21"
+        peerintf: "ge-0.0.1-vsrx11"

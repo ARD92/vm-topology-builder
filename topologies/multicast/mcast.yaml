@@ -1,0 +1,224 @@
+---
+network_nodes:
+  - 
+    name: "PE1"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8611
+    pfe_port: 8621
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe1_p1"
+        intf: "ge-0.0.0-pe1"
+        peerintf: "ge-0.0.0-p1"
+      - name: "pe1_pe2"
+        intf: "ge-0.0.1-pe1"
+        peerintf: "ge-0.0.1-pe2"
+      - name: "pe1_source"
+        intf: "ge-0.0.2-pe1"
+        peerintf: ""
+  - 
+    name: "PE2"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8612
+    pfe_port: 8622
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe2_p2"
+        intf: "ge-0.0.0-pe2"
+        peerintf: "ge-0.0.0-p2"
+      - name: "pe1_pe2"
+        intf: "ge-0.0.1-pe2"
+        peerintf: "ge-0.0.1-pe1"
+      - name: "pe2_pe5"
+        intf: "ge-0.0.2-pe2"
+        peerintf: "ge-0.0.2-pe5"
+      - name: "pe2_source1"
+        intf: "ge-0.0.3-pe2"
+        peerintf: ""
+  - 
+    name: "P1"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8613
+    pfe_port: 8623
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe1_p1"
+        intf: "ge-0.0.0-p1"
+        peerintf: "ge-0.0.0-pe1"
+      - name: "p1_p2"
+        intf: "ge-0.0.1-p1"
+        peerintf: "ge-0.0.1-p2"
+      - name: "p1_pe3"
+        intf: "ge-0.0.2-p1"
+        peerintf: "ge-0.0.2-pe3"
+  - 
+    name: "P2"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8614
+    pfe_port: 8624
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe2_p2"
+        intf: "ge-0.0.0-p2"
+        peerintf: "ge-0.0.0-pe2"
+      - name: "p1_p2"
+        intf: "ge-0.0.1-p2"
+        peerintf: "ge-0.0.1-p1"
+      - name: "p2_pe6"
+        intf: "ge-0.0.2-p2"
+        peerintf: "ge-0.0.2-pe6"
+      - name: "p2_pe4"
+        intf: "ge-0.0.3-p2"
+        peerintf: "ge-0.0.2-pe4"
+  - 
+    name: "PE3"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8615
+    pfe_port: 8625
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe3_cust1"
+        intf: "ge-0.0.0-pe3"
+        peerintf: ""
+      - name: "pe3_pe4"
+        intf: "ge-0.0.1-pe3"
+        peerintf: "ge-0.0.1-pe4"
+      - name: "p1_pe3"
+        intf: "ge-0.0.2-pe3"
+        peerintf: "ge-0.0.2-p1"
+  - 
+    name: "PE4"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8616
+    pfe_port: 8626
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe4_cust11"
+        intf: "ge-0.0.0-pe4"
+        peerintf: ""
+      - name: "pe3_pe4"
+        intf: "ge-0.0.1-pe4"
+        peerintf: "ge-0.0.1-pe3"
+      - name: "p2_pe4"
+        intf: "ge-0.0.2-pe4"
+        peerintf: "ge-0.0.3-p2"
+  - 
+    name: "PE5"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8617
+    pfe_port: 8627
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe5_pe6"
+        intf: "ge-0.0.0-pe5"
+        peerintf: "ge-0.0.0-pe6"
+      - name: "pe5_cust2"
+        intf: "ge-0.0.1-pe5"
+        peerintf: ""
+      - name: "pe5_pe2"
+        intf: "ge-0.0.2-pe5"
+        peerintf: "ge-0.0.2-pe2"
+  - 
+    name: "PE6"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8618
+    pfe_port: 8628
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "pe5_pe6"
+        intf: "ge-0.0.0-pe5"
+        peerintf: "ge-0.0.0-pe6"
+      - name: "pe5_cust22"
+        intf: "ge-0.0.1-pe5"
+        peerintf: ""
+      - name: "p2_pe6"
+        intf: "ge-0.0.2-pe6"
+        peerintf: "ge-0.0.2-p2"

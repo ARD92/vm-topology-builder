@@ -1,3 +1,4 @@
+# Refer to GVS slides for topology info
 ---
 network_nodes:
   - 
@@ -214,10 +215,10 @@ network_nodes:
     link: 
       # name is user defined. This will be used to create the bridge name
       - name: "pe5_pe6"
-        intf: "ge-0.0.0-pe5"
-        peerintf: "ge-0.0.0-pe6"
-      - name: "pe5_cust22"
-        intf: "ge-0.0.1-pe5"
+        intf: "ge-0.0.0-pe6"
+        peerintf: "ge-0.0.0-pe5"
+      - name: "pe6_cust22"
+        intf: "ge-0.0.1-pe6"
         peerintf: ""
       - name: "p2_pe6"
         intf: "ge-0.0.2-pe6"

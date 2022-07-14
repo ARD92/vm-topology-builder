@@ -1,0 +1,283 @@
+
+set version 22.2-20211215.421
+set groups FAM_ISO interfaces <*> unit 0 family iso
+set groups FAM_ISO interfaces <*> unit 0 family mpls
+set apply-groups FAM_ISO
+set system host-name R0
+set system root-authentication encrypted-password "$6$rw0NmG2X$CiRhKBQuX7Hy8GJHRr5EDoGmnjov7D5PajpcR6wE.Vu51tGyZU07UOvkf4tgfe55uaH0PPGoB6l83RACOJvMu/"
+set system scripts language python
+set system login user emsuser uid 2001
+set system login user emsuser class super-user
+set system login user emsuser authentication encrypted-password "$6$c4ZZ1iYsY4fICTvF$PK/qKfqubwjXIwfYgucNEd/GFsyyRdVrwMPb.aRsB3BNvAutOKLCJUfifLc4AoTcBn2iOW2aLZ0znXJ81JNiX0"
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services netconf rfc-compliant
+set system services outbound-ssh client EMS-192.168.122.6 device-id ddc128d6-0e3c-4c67-b53a-ab595edb99c8.JUNOS
+set system services outbound-ssh client EMS-192.168.122.6 secret "$9$CRdZtu1hSrKvLyrMXNdsYfTQFCtrlKvLxSyoJZDkq9AtpIEcSeXxdAplKW8dVfTQn6AO1RrevB1dbY2GU69Cu0ISrex-V8Lk.mPQzKMWXxd"
+set system services outbound-ssh client EMS-192.168.122.6 keep-alive
+set system services outbound-ssh client EMS-192.168.122.6 services netconf
+set system services outbound-ssh client EMS-192.168.122.6 192.168.122.6 port 7804
+set system syslog file default-log-messages any any
+set system syslog file default-log-messages match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL"
+set system syslog file default-log-messages structured-data
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set chassis fpc 0 pic 0 tunnel-services bandwidth 1g
+set chassis network-services enhanced-ip
+set interfaces ge-0/0/0 description TO_R1
+set interfaces ge-0/0/0 unit 0 family inet address 172.16.10.1/30
+set interfaces ge-0/0/1 unit 0 description TO_R3
+set interfaces ge-0/0/1 unit 0 family inet address 172.16.10.5/30
+set interfaces ge-0/0/2 unit 0 description "TO R8"
+set interfaces ge-0/0/2 unit 0 family inet address 172.16.40.2/30
+set interfaces ge-0/0/3 flexible-vlan-tagging
+set interfaces ge-0/0/3 unit 0 vlan-id 10
+set interfaces ge-0/0/3 unit 0 family inet address 10.0.10.1/30
+set interfaces ge-0/0/3 unit 100 vlan-id 100
+set interfaces ge-0/0/3 unit 100 family inet address 10.0.100.1/30
+set interfaces lt-0/0/10 unit 0 encapsulation ethernet
+set interfaces lt-0/0/10 unit 0 peer-unit 1
+set interfaces lt-0/0/10 unit 0 family inet address 172.16.60.1/30
+set interfaces lt-0/0/10 unit 1 encapsulation ethernet
+set interfaces lt-0/0/10 unit 1 peer-unit 0
+set interfaces lt-0/0/10 unit 1 family inet address 172.16.60.2/30
+set interfaces fxp0 unit 0 family inet address 10.102.144.10/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61BB84B4C5
+set interfaces lo0 unit 0 family inet address 10.10.10.10/32
+set interfaces lo0 unit 0 family inet address 127.0.0.1/32
+set interfaces lo0 unit 0 family iso address 49.0001.000a.0a0a.0a00
+set interfaces lo0 unit 0 family inet6 address 2001:db8:10:255::10/128
+set interfaces lo0 unit 100 family inet address 100.0.0.1/32
+set interfaces lo0 unit 100 family inet address 100.0.1.1/32
+set interfaces lo0 unit 100 family inet address 100.0.2.1/32
+set interfaces lo0 unit 100 family inet address 100.0.3.1/32
+set interfaces lo0 unit 200 family inet address 101.0.0.1/32
+set interfaces lo0 unit 300 family inet address 102.0.0.1/32
+set interfaces lo0 unit 400 family inet address 10.10.100.1/24
+set policy-options policy-statement ADD_COLOR_EXPORT_200 term 10 then community add COLOR-129
+set policy-options policy-statement ADD_COLOR_EXPORT_200 term 10 then community add TARGET-129
+set policy-options policy-statement ADD_COLOR_EXPORT_200 term 10 then accept
+set policy-options policy-statement ADD_COLOR_EXPORT_500 term 10 then community add COLOR-500
+set policy-options policy-statement ADD_COLOR_EXPORT_500 term 10 then community add TARGET-500
+set policy-options policy-statement ADD_COLOR_EXPORT_500 term 10 then accept
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 10 from route-filter 100.0.0.1/32 exact
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 10 then community add TARGET-128
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 10 then accept
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 20 from route-filter 100.0.1.1/32 exact
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 20 then community add COLOR-128
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 20 then community add TARGET-128
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 20 then accept
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 30 from route-filter 100.0.2.1/32 exact
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 30 then community add COLOR-129
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 30 then community add TARGET-128
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 30 then accept
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 40 from route-filter 100.0.3.1/32 exact
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 40 then community add COLOR-500
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 40 then community add TARGET-128
+set policy-options policy-statement ADD_COLOR_EXPORT_VPN1 term 40 then accept
+set policy-options policy-statement ADD_COLOR_IMPORT term 10 then accept
+set policy-options policy-statement ADD_COLOR_IMPORT term 10 then resolution-map PNH-MAP
+set policy-options policy-statement ADD_COLOR_IMPORT_128 term 10 from community TARGET-128
+set policy-options policy-statement ADD_COLOR_IMPORT_128 term 10 then accept
+set policy-options policy-statement ADD_COLOR_IMPORT_128 term 10 then resolution-map PNH-MAP
+deactivate policy-options policy-statement ADD_COLOR_IMPORT_128 term 10 then resolution-map
+set policy-options policy-statement ADD_COLOR_IMPORT_128 term 20 then reject
+set policy-options policy-statement ADD_COLOR_IMPORT_129 term 10 from community TARGET-129
+set policy-options policy-statement ADD_COLOR_IMPORT_129 term 10 then accept
+set policy-options policy-statement ADD_COLOR_IMPORT_129 term 10 then resolution-map PNH-MAP
+set policy-options policy-statement ADD_COLOR_IMPORT_500 term 10 from community TARGET-500
+set policy-options policy-statement ADD_COLOR_IMPORT_500 term 10 then accept
+set policy-options policy-statement ADD_COLOR_IMPORT_500 term 10 then resolution-map PNH-MAP
+deactivate policy-options policy-statement ADD_COLOR_IMPORT_500 term 10 then resolution-map
+set policy-options policy-statement ADVERTISE-TO-R8 term 10 from community TC-500
+set policy-options policy-statement ADVERTISE-TO-R8 term 10 then accept
+set policy-options policy-statement ADVERTISE-TO-R8 term 20 then reject
+set policy-options policy-statement FAD-SID term 10 from route-filter 10.10.10.10/32 exact
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 128 index 110
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 128 node-segment
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 129 index 210
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 129 node-segment
+set policy-options policy-statement FAD-SID term 10 then prefix-segment index 10
+set policy-options policy-statement FAD-SID term 10 then prefix-segment node-segment
+set policy-options policy-statement FAD-SID term 10 then accept
+set policy-options policy-statement IMPORT-CT term 10 then accept
+set policy-options policy-statement IMPORT_ADD_COLOR_REDIRECT then community add COLOR-500
+set policy-options policy-statement IMPORT_ADD_COLOR_REDIRECT then accept
+set policy-options policy-statement MAP-TO-TC-500 term 10 from protocol direct
+set policy-options policy-statement MAP-TO-TC-500 term 10 from rib bgp.transport.3
+set policy-options policy-statement MAP-TO-TC-500 term 10 from interface lo0.0
+deactivate policy-options policy-statement MAP-TO-TC-500 term 10 from interface
+set policy-options policy-statement MAP-TO-TC-500 term 10 then community add COLOR-500
+deactivate policy-options policy-statement MAP-TO-TC-500 term 10 then community add COLOR-500
+set policy-options policy-statement MAP-TO-TC-500 term 10 then next-hop self
+set policy-options policy-statement MAP-TO-TC-500 term 10 then accept
+set policy-options policy-statement TE term 10 from family traffic-engineering
+set policy-options policy-statement TE term 10 then accept
+set policy-options policy-statement mpath then multipath-resolve
+set policy-options policy-statement pplb then load-balance per-packet
+set policy-options community COLOR-128 members color:0:128
+set policy-options community COLOR-129 members color:0:129
+set policy-options community COLOR-500 members color:0:500
+set policy-options community TARGET-128 members target:100:128
+set policy-options community TARGET-129 members target:200:129
+set policy-options community TARGET-500 members target:300:500
+set policy-options community TC-500 members transport-target:0:500
+set policy-options resolution-map PNH-MAP mode ip-color
+set routing-instances CE-1 instance-type virtual-router
+set routing-instances CE-1 routing-options autonomous-system 65400
+set routing-instances CE-1 routing-options flow route TEST-REDIRECT match source 10.10.100.1/32
+set routing-instances CE-1 routing-options flow route TEST-REDIRECT then community COLOR-500
+set routing-instances CE-1 routing-options flow route TEST-REDIRECT then redirect 6.6.6.6
+set routing-instances CE-1 routing-options static route 0.0.0.0/0 next-hop 172.16.60.1
+set routing-instances CE-1 protocols bgp group TEST-CT-REDIRECT type internal
+set routing-instances CE-1 protocols bgp group TEST-CT-REDIRECT neighbor 172.16.60.1 family inet unicast
+set routing-instances CE-1 protocols bgp group TEST-CT-REDIRECT neighbor 172.16.60.1 family inet flow
+set routing-instances CE-1 interface lt-0/0/10.1
+set routing-instances CE-1 interface lo0.400
+set routing-instances VPN-1 instance-type vrf
+set routing-instances VPN-1 interface ge-0/0/3.100
+set routing-instances VPN-1 interface lo0.100
+set routing-instances VPN-1 route-distinguisher 100:100
+set routing-instances VPN-1 vrf-import ADD_COLOR_IMPORT_128
+set routing-instances VPN-1 vrf-export ADD_COLOR_EXPORT_VPN1
+set routing-instances VPN-1 vrf-target target:100:128
+deactivate routing-instances VPN-1 vrf-target
+set routing-instances VPN-1 vrf-table-label
+set routing-instances VPN-2 instance-type vrf
+set routing-instances VPN-2 interface lo0.200
+set routing-instances VPN-2 route-distinguisher 200:100
+set routing-instances VPN-2 vrf-import ADD_COLOR_IMPORT_129
+set routing-instances VPN-2 vrf-export ADD_COLOR_EXPORT_200
+set routing-instances VPN-2 vrf-target target:200:129
+deactivate routing-instances VPN-2 vrf-target
+set routing-instances VPN-2 vrf-table-label
+set routing-instances VPN-3 instance-type vrf
+set routing-instances VPN-3 interface lo0.300
+set routing-instances VPN-3 route-distinguisher 300:100
+set routing-instances VPN-3 vrf-import ADD_COLOR_IMPORT_500
+set routing-instances VPN-3 vrf-export ADD_COLOR_EXPORT_500
+set routing-instances VPN-3 vrf-target target:300:500
+deactivate routing-instances VPN-3 vrf-target
+set routing-instances VPN-3 vrf-table-label
+set routing-options flex-algorithm 128 definition strict-spf
+set routing-options flex-algorithm 128 definition priority 100
+set routing-options flex-algorithm 128 definition admin-group include-all red
+set routing-options flex-algorithm 128 color 128
+set routing-options flex-algorithm 128 use-transport-class
+set routing-options flex-algorithm 129 definition strict-spf
+set routing-options flex-algorithm 129 definition priority 200
+set routing-options flex-algorithm 129 definition admin-group include-all yellow
+set routing-options flex-algorithm 129 color 129
+set routing-options flex-algorithm 129 use-transport-class
+set routing-options route-distinguisher-id 10.10.10.10
+set routing-options resolution preserve-nexthop-hierarchy
+set routing-options router-id 10.10.10.10
+set routing-options autonomous-system 65400
+set routing-options static route 192.168.122.0/24 next-hop 10.102.144.253
+set routing-options static route 193.10.1.0/30 next-hop 10.102.144.253
+set routing-options static route 10.10.100.0/24 next-hop 172.16.60.2
+set routing-options transport-class auto-create
+set routing-options transport-class name TC-500 color 500
+set routing-options transport-class name TC-500 tunnel-egress end-point 10.10.10.10
+set routing-options transport-class name C-600 color 600
+set routing-options transport-class name C-600 tunnel-egress end-point 10.10.10.10
+set routing-options forwarding-table export pplb
+set routing-options forwarding-table ecmp-fast-reroute
+set routing-options forwarding-table chained-composite-next-hop ingress l3vpn
+set protocols router-advertisement interface fxp0.0
+set protocols bfd sbfd local-discriminator 100
+set protocols bgp group BGP-LS-NORTHSTAR type internal
+set protocols bgp group BGP-LS-NORTHSTAR family traffic-engineering unicast
+set protocols bgp group BGP-LS-NORTHSTAR export TE
+set protocols bgp group BGP-LS-NORTHSTAR local-as 64500
+set protocols bgp group BGP-LS-NORTHSTAR allow 192.168.122.3/32
+set protocols bgp group BGP-LS-NORTHSTAR allow 192.168.122.4/32
+set protocols bgp group BGP-LS-NORTHSTAR allow 192.168.122.5/32
+set protocols bgp group BGP-LS-NORTHSTAR allow 192.168.122.2/32
+set protocols bgp group BGP-LS-NORTHSTAR allow 193.10.1.0/30
+set protocols bgp group AS65402 type external
+set protocols bgp group AS65402 import IMPORT-CT
+set protocols bgp group AS65402 family inet labeled-unicast rib inet.3
+set protocols bgp group AS65402 family inet transport add-path receive
+set protocols bgp group AS65402 export MAP-TO-TC-500
+set protocols bgp group AS65402 peer-as 65402
+set protocols bgp group AS65402 neighbor 172.16.40.1
+set protocols bgp group AS65402 advertise-prefix-sid
+set protocols bgp group AS65402 accept-prefix-sid
+set protocols bgp group AS65402 advertise-srgb
+set protocols bgp group RR type internal
+set protocols bgp group RR family inet labeled-unicast rib inet.3
+set protocols bgp group RR family inet transport
+set protocols bgp group RR family inet-vpn unicast
+set protocols bgp group RR family inet-vpn flow
+set protocols bgp group RR neighbor 2.2.2.2 local-address 10.10.10.10
+set protocols bgp group LS-CE type internal
+set protocols bgp group LS-CE neighbor 172.16.60.2 family inet unicast
+set protocols bgp group LS-CE neighbor 172.16.60.2 family inet flow
+set protocols isis interface ge-0/0/0.0 point-to-point
+set protocols isis interface ge-0/0/1.0 point-to-point
+set protocols isis interface lo0.0 passive
+set protocols isis source-packet-routing srgb start-label 50000
+set protocols isis source-packet-routing srgb index-range 5000
+set protocols isis source-packet-routing node-segment ipv4-index 10
+set protocols isis source-packet-routing flex-algorithm 128
+set protocols isis source-packet-routing flex-algorithm 129
+set protocols isis level 1 disable
+set protocols isis traffic-engineering l3-unicast-topology
+set protocols isis traffic-engineering advertisement always
+set protocols isis export FAD-SID
+set protocols mpls lsp-external-controller pccd
+set protocols mpls traffic-engineering bgp-igp-both-ribs
+deactivate protocols mpls traffic-engineering bgp-igp-both-ribs
+set protocols mpls traffic-engineering database import l3-unicast-topology bgp-link-state
+set protocols mpls traffic-engineering database import policy TE
+set protocols mpls admin-groups red 10
+set protocols mpls admin-groups yellow 20
+set protocols mpls icmp-tunneling
+set protocols mpls label-range srgb-label-range 70000 80000
+set protocols mpls interface all
+set protocols mpls interface fxp0.0 disable
+set protocols mpls interface ge-0/0/0.0 admin-group red
+set protocols mpls interface ge-0/0/2.0 admin-group yellow
+set protocols mpls interface ge-0/0/10.0
+set protocols mpls interface ge-0/0/1.0 admin-group yellow
+set protocols source-packet-routing lsp-external-controller pccd
+set protocols source-packet-routing segment-list TO-R2 50002 label 50002
+set protocols source-packet-routing segment-list TO-R6 50006 label 50006
+set protocols source-packet-routing compute-profile RED admin-group include-all red
+deactivate protocols source-packet-routing compute-profile RED
+set protocols source-packet-routing source-routing-path TO-R6 to 6.6.6.6
+set protocols source-packet-routing source-routing-path TO-R6 color 500
+set protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection sbfd remote-discriminator 700
+set protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection minimum-interval 50
+set protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection multiplier 3
+deactivate protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection
+deactivate protocols source-packet-routing source-routing-path TO-R6
+set protocols source-packet-routing source-routing-path TO-R2 to 2.2.2.2
+set protocols source-packet-routing source-routing-path TO-R2 color 500
+set protocols source-packet-routing source-routing-path TO-R2 primary TO-R2
+deactivate protocols source-packet-routing source-routing-path TO-R2
+set protocols source-packet-routing inherit-label-nexthops
+set protocols source-packet-routing use-transport-class
+set protocols pcep pce northstar local-address 10.102.144.10
+set protocols pcep pce northstar destination-ipv4-address 192.168.122.9
+set protocols pcep pce northstar destination-port 4189
+set protocols pcep pce northstar pce-type active
+set protocols pcep pce northstar pce-type stateful
+set protocols pcep pce northstar lsp-provisioning
+set protocols pcep pce northstar p2mp-lsp-report-capability
+set protocols pcep pce northstar p2mp-lsp-update-capability
+set protocols pcep pce northstar p2mp-lsp-init-capability
+set protocols pcep pce northstar lsp-cleanup-timer 30
+set protocols pcep pce northstar spring-capability
+set protocols pcep pce northstar delegation-cleanup-timeout 10
+set protocols pcep pce northstar pce-traffic-steering

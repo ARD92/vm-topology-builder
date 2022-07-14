@@ -1,0 +1,79 @@
+
+set version 21.3R1.6
+set groups FAM_ISO interfaces <*> unit 0 family iso
+set groups FAM_ISO interfaces <*> unit 0 family mpls
+set apply-groups FAM_ISO
+set system host-name R7
+set system root-authentication encrypted-password "$6$WCyrIGpA$cydBWu82.CBJ4OVpusjnHjNRvCinerkqjdZyR5kcugfeSGlMtV73aZcBv9.Wt5JZ8IpS/s.stkvij94F6yloq."
+set system scripts language python
+set system login user emsuser uid 2001
+set system login user emsuser class super-user
+set system login user emsuser authentication encrypted-password "$6$oZd7Yp8RvhzzruI7$41NnjM/pMM6c786/mXhodnREugHv4hwDALy6JcGInQmNqiou3OIukAKuGDp/p5VWE.gfW1Z8.1HT1C.8oFWNV."
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services netconf rfc-compliant
+set system services outbound-ssh client EMS-192.168.122.6 device-id 0e5795a4-8e45-4814-874a-e21519593cb8.JUNOS
+set system services outbound-ssh client EMS-192.168.122.6 secret "$9$CRdZAO1revx7VCtxN-VY2fTQz39cSreWLSy24aZjin/9CO1REyleWcSNdwsJZFn6CA0EhrWLx/CKMXxdVP5TFnCtpB1hS0OclevLXbs2oDi"
+set system services outbound-ssh client EMS-192.168.122.6 keep-alive
+set system services outbound-ssh client EMS-192.168.122.6 services netconf
+set system services outbound-ssh client EMS-192.168.122.6 192.168.122.6 port 7804
+set system syslog file default-log-messages any any
+set system syslog file default-log-messages match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL"
+set system syslog file default-log-messages structured-data
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set chassis network-services enhanced-ip
+set interfaces ge-0/0/0 unit 0 description "TO R4"
+set interfaces ge-0/0/0 unit 0 family inet address 172.16.30.6/30
+set interfaces ge-0/0/1 unit 0 description " TO R5"
+set interfaces ge-0/0/1 unit 0 family inet address 172.16.30.10/30
+set interfaces ge-0/0/2 unit 0 description " TO R6"
+set interfaces ge-0/0/2 unit 0 family inet address 172.16.30.18/30
+set interfaces fxp0 unit 0 family inet address 10.102.144.7/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61BB8508B8
+set interfaces lo0 unit 0 family inet address 7.7.7.7/32
+set interfaces lo0 unit 0 family iso address 49.0303.0007.0707.0700
+set interfaces lo0 unit 0 family inet6 address 2001:db8:10:255::7/128
+set policy-options policy-statement FAD-SID term 10 from route-filter 7.7.7.7/32 exact
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 128 index 107
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 128 node-segment
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 129 index 207
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 129 node-segment
+set policy-options policy-statement FAD-SID term 10 then prefix-segment index 7
+set policy-options policy-statement FAD-SID term 10 then prefix-segment node-segment
+set policy-options policy-statement FAD-SID term 10 then accept
+set routing-options flex-algorithm 128 definition metric-type igp-metric
+set routing-options flex-algorithm 128 definition spf
+set routing-options flex-algorithm 128 definition priority 100
+set routing-options static route 193.10.1.0/30 next-hop 10.102.144.253
+set routing-options static route 192.168.122.0/24 next-hop 10.102.144.253
+set protocols router-advertisement interface fxp0.0
+set protocols isis interface ge-0/0/0.0 level 2 te-metric 10
+set protocols isis interface ge-0/0/0.0 level 2 metric 200
+set protocols isis interface ge-0/0/0.0 point-to-point
+set protocols isis interface ge-0/0/1.0 level 2 te-metric 20
+set protocols isis interface ge-0/0/1.0 level 2 metric 150
+set protocols isis interface ge-0/0/1.0 point-to-point
+set protocols isis interface ge-0/0/2.0 level 2 te-metric 20
+set protocols isis interface ge-0/0/2.0 level 2 metric 100
+set protocols isis interface ge-0/0/2.0 point-to-point
+set protocols isis interface lo0.0 passive
+set protocols isis source-packet-routing srgb start-label 60000
+set protocols isis source-packet-routing srgb index-range 5000
+set protocols isis source-packet-routing node-segment ipv4-index 7
+set protocols isis source-packet-routing flex-algorithm 128
+set protocols isis source-packet-routing flex-algorithm 129
+set protocols isis traffic-engineering advertisement always
+set protocols isis export FAD-SID
+set protocols mpls lsp-external-controller pccd
+set protocols mpls interface fxp0.0 disable
+set protocols mpls interface all

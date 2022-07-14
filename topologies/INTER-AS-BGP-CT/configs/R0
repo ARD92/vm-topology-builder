@@ -1,0 +1,640 @@
+
+## Last commit: 2021-12-29 21:23:40 UTC by root
+version 22.2-20211215.421;
+groups {
+    FAM_ISO {
+        interfaces {
+            <*> {
+                unit 0 {
+                    family iso;
+                    family mpls;
+                }
+            }
+        }
+    }
+}
+apply-groups FAM_ISO;
+system {
+    host-name R0;
+    root-authentication {
+        encrypted-password "$6$rw0NmG2X$CiRhKBQuX7Hy8GJHRr5EDoGmnjov7D5PajpcR6wE.Vu51tGyZU07UOvkf4tgfe55uaH0PPGoB6l83RACOJvMu/"; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    login {
+        user emsuser {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$6$c4ZZ1iYsY4fICTvF$PK/qKfqubwjXIwfYgucNEd/GFsyyRdVrwMPb.aRsB3BNvAutOKLCJUfifLc4AoTcBn2iOW2aLZ0znXJ81JNiX0"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+            rfc-compliant;
+        }
+        outbound-ssh {
+            client EMS-192.168.122.6 {
+                device-id ddc128d6-0e3c-4c67-b53a-ab595edb99c8.JUNOS;
+                secret "$9$CRdZtu1hSrKvLyrMXNdsYfTQFCtrlKvLxSyoJZDkq9AtpIEcSeXxdAplKW8dVfTQn6AO1RrevB1dbY2GU69Cu0ISrex-V8Lk.mPQzKMWXxd"; ## SECRET-DATA
+                keep-alive;
+                services netconf;
+                192.168.122.6 port 7804;
+            }
+        }
+    }
+    syslog {
+        file default-log-messages {
+            any any;
+            match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL";
+            structured-data;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+inactive: logical-systems {
+    CE {
+        interfaces {
+            lt-0/0/10 {
+                unit 1 {
+                    encapsulation ethernet;
+                    peer-unit 0;
+                    family inet {
+                        address 172.16.60.2/30;
+                    }
+                }
+            }
+            lo0 {
+                unit 400 {
+                    family inet {
+                        address 10.10.100.1/24;
+                    }
+                }
+            }
+        }
+        routing-options {
+            static {
+                route 0.0.0.0/0 next-hop 172.16.60.1;
+            }
+        }
+    }
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            tunnel-services {
+                bandwidth 1g;
+            }
+        }
+    }
+    network-services enhanced-ip;
+}
+interfaces {
+    ge-0/0/0 {
+        description TO_R1;
+        unit 0 {
+            family inet {
+                address 172.16.10.1/30;
+            }
+        }
+    }
+    ge-0/0/1 {
+        unit 0 {
+            description TO_R3;
+            family inet {
+                address 172.16.10.5/30;
+            }
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            description "TO R8";
+            family inet {
+                address 172.16.40.2/30;
+            }
+        }
+    }
+    ge-0/0/3 {
+        flexible-vlan-tagging;
+        unit 0 {
+            vlan-id 10;
+            family inet {
+                address 10.0.10.1/30;
+            }
+        }
+        unit 100 {
+            vlan-id 100;
+            family inet {
+                address 10.0.100.1/30;
+            }
+        }
+    }
+    lt-0/0/10 {
+        unit 0 {
+            encapsulation ethernet;
+            peer-unit 1;
+            family inet {
+                address 172.16.60.1/30;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.102.144.10/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM61BB84B4C5;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.10.10.10/32;
+                address 127.0.0.1/32;
+            }
+            family iso {
+                address 49.0001.000a.0a0a.0a00;
+            }
+            family inet6 {
+                address 2001:db8:10:255::10/128;
+            }
+        }
+        unit 100 {
+            family inet {
+                address 100.0.0.1/32;
+                address 100.0.1.1/32;
+                address 100.0.2.1/32;
+                address 100.0.3.1/32;
+            }
+        }
+        unit 200 {
+            family inet {
+                address 101.0.0.1/32;
+            }
+        }
+        unit 300 {
+            family inet {
+                address 102.0.0.1/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement ADD_COLOR_EXPORT_200 {
+        term 10 {
+            then {
+                community add COLOR-129;
+                community add TARGET-129;
+                accept;
+            }
+        }
+    }
+    policy-statement ADD_COLOR_EXPORT_500 {
+        term 10 {
+            then {
+                community add COLOR-500;
+                community add TARGET-500;
+                accept;
+            }
+        }
+    }
+    policy-statement ADD_COLOR_EXPORT_VPN1 {
+        term 10 {
+            from {
+                route-filter 100.0.0.1/32 exact;
+            }
+            then {
+                community add TARGET-128;
+                accept;
+            }
+        }
+        term 20 {
+            from {
+                route-filter 100.0.1.1/32 exact;
+            }
+            then {
+                community add COLOR-128;
+                community add TARGET-128;
+                accept;
+            }
+        }
+        term 30 {
+            from {
+                route-filter 100.0.2.1/32 exact;
+            }
+            then {
+                community add COLOR-129;
+                community add TARGET-128;
+                accept;
+            }
+        }
+        term 40 {
+            from {
+                route-filter 100.0.3.1/32 exact;
+            }
+            then {
+                community add COLOR-500;
+                community add TARGET-128;
+                accept;
+            }
+        }
+    }
+    policy-statement ADD_COLOR_IMPORT {
+        term 10 {
+            then {
+                accept;
+                resolution-map PNH-MAP;
+            }
+        }
+    }
+    policy-statement ADD_COLOR_IMPORT_128 {
+        term 10 {
+            from community TARGET-128;
+            then {
+                accept;
+                inactive: resolution-map PNH-MAP;
+            }
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement ADD_COLOR_IMPORT_129 {
+        term 10 {
+            from community TARGET-129;
+            then {
+                accept;
+                resolution-map PNH-MAP;
+            }
+        }
+    }
+    policy-statement ADD_COLOR_IMPORT_500 {
+        term 10 {
+            from community TARGET-500;
+            then {
+                accept;
+                inactive: resolution-map PNH-MAP;
+            }
+        }
+    }
+    policy-statement ADVERTISE-TO-R8 {
+        term 10 {
+            from {
+                protocol bgp;
+                community COLOR-500;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement FAD-SID {
+        term 10 {
+            from {
+                route-filter 10.10.10.10/32 exact;
+            }
+            then {
+                prefix-segment {
+                    algorithm 128 index 110 node-segment;
+                    algorithm 129 index 210 node-segment;
+                    index 10;
+                    node-segment;
+                }
+                accept;
+            }
+        }
+    }
+    policy-statement IMPORT-CT {
+        term 10 {
+            then accept;
+        }
+    }
+    policy-statement IMPORT_ADD_COLOR_REDIRECT {
+        then {
+            community add COLOR-500;
+            accept;
+        }
+    }
+    policy-statement MAP-TO-TC-500 {
+        term 10 {
+            from {
+                protocol direct;
+                rib bgp.transport.3;
+                inactive: interface lo0.0;
+            }
+            then {
+                inactive: community add COLOR-500;
+                next-hop self;
+                accept;
+            }
+        }
+    }
+    policy-statement TE {
+        term 10 {
+            from family traffic-engineering;
+            then accept;
+        }
+    }
+    policy-statement mpath {
+        then multipath-resolve;
+    }
+    policy-statement pplb {
+        then {
+            load-balance per-packet;
+        }
+    }
+    community COLOR-128 members color:0:128;
+    community COLOR-129 members color:0:129;
+    community COLOR-500 members color:0:500;
+    community TARGET-128 members target:100:128;
+    community TARGET-129 members target:200:129;
+    community TARGET-500 members target:300:500;
+    resolution-map PNH-MAP {
+        mode ip-color;
+    }
+}
+routing-instances {
+    VPN-1 {
+        instance-type vrf;
+        interface ge-0/0/3.100;
+        interface lo0.100;
+        route-distinguisher 100:100;
+        vrf-import ADD_COLOR_IMPORT_128;
+        vrf-export ADD_COLOR_EXPORT_VPN1;
+        inactive: vrf-target target:100:128;
+        vrf-table-label;
+    }
+    VPN-2 {
+        instance-type vrf;
+        interface lo0.200;
+        route-distinguisher 200:100;
+        vrf-import ADD_COLOR_IMPORT_129;
+        vrf-export ADD_COLOR_EXPORT_200;
+        inactive: vrf-target target:200:129;
+        vrf-table-label;
+    }
+    VPN-3 {
+        instance-type vrf;
+        interface lo0.300;
+        route-distinguisher 300:100;
+        vrf-import ADD_COLOR_IMPORT_500;
+        vrf-export ADD_COLOR_EXPORT_500;
+        inactive: vrf-target target:300:500;
+        vrf-table-label;
+    }
+}
+routing-options {
+    flex-algorithm 128 {
+        definition {
+            strict-spf;
+            priority 100;
+            admin-group include-all red;
+        }
+        color 128;
+        inactive: use-transport-class;
+    }
+    flex-algorithm 129 {
+        definition {
+            strict-spf;
+            priority 200;
+            admin-group include-all yellow;
+        }
+        color 129;
+        inactive: use-transport-class;
+    }
+    route-distinguisher-id 10.10.10.10;
+    resolution {
+        preserve-nexthop-hierarchy;
+    }
+    router-id 10.10.10.10;
+    autonomous-system 65400;
+    static {
+        route 192.168.122.0/24 next-hop 10.102.144.253;
+        route 193.10.1.0/30 next-hop 10.102.144.253;
+        route 10.10.100.0/24 next-hop 172.16.60.2;
+    }
+    transport-class {
+        auto-create;
+        name TC-500 {
+            color 500;
+            tunnel-egress {
+                end-point 10.10.10.10;
+            }
+        }
+        name C-600 {
+            color 600;
+            tunnel-egress {
+                end-point 10.10.10.10;
+            }
+        }
+    }
+    forwarding-table {
+        export pplb;
+        ecmp-fast-reroute;
+        chained-composite-next-hop {
+            ingress {
+                l3vpn;
+            }
+        }
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    bfd {
+        sbfd {
+            local-discriminator 100;
+        }
+    }
+    bgp {
+        group BGP-LS-NORTHSTAR {
+            type internal;
+            family traffic-engineering {
+                unicast;
+            }
+            export TE;
+            local-as 64500;
+            allow [ 192.168.122.3/32 192.168.122.4/32 192.168.122.5/32 192.168.122.2/32 193.10.1.0/30 ];
+        }
+        group AS65402 {
+            type external;
+            import IMPORT-CT;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+                transport {
+                    add-path {
+                        receive;
+                    }
+                }
+            }
+            export MAP-TO-TC-500;
+            peer-as 65402;
+            neighbor 172.16.40.1;
+            advertise-prefix-sid;
+            accept-prefix-sid;
+            advertise-srgb;
+        }
+        group RR {
+            type internal;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+                transport;
+            }
+            family inet-vpn {
+                unicast;
+            }
+            neighbor 2.2.2.2 {
+                local-address 10.10.10.10;
+            }
+        }
+    }
+    isis {
+        interface ge-0/0/0.0 {
+            point-to-point;
+        }
+        interface ge-0/0/1.0 {
+            point-to-point;
+        }
+        interface lo0.0 {
+            passive;
+        }
+        source-packet-routing {
+            srgb start-label 50000 index-range 5000;
+            node-segment ipv4-index 10;
+            flex-algorithm [ 128 129 ];
+        }
+        level 1 disable;
+        traffic-engineering {
+            l3-unicast-topology;
+            advertisement always;
+        }
+        export FAD-SID;
+    }
+    mpls {
+        lsp-external-controller pccd;
+        traffic-engineering {
+            inactive: bgp-igp-both-ribs;
+            database {
+                import {
+                    l3-unicast-topology {
+                        bgp-link-state;
+                    }
+                    policy TE;
+                }
+            }
+        }
+        admin-groups {
+            red 10;
+            yellow 20;
+        }
+        icmp-tunneling;
+        label-range {
+            srgb-label-range 70000 80000;
+        }
+        interface all;
+        interface fxp0.0 {
+            disable;
+        }
+        interface ge-0/0/0.0 {
+            admin-group red;
+        }
+        interface ge-0/0/2.0 {
+            admin-group yellow;
+        }
+        interface ge-0/0/10.0;
+        interface ge-0/0/1.0 {
+            admin-group yellow;
+        }
+    }
+    source-packet-routing {
+        lsp-external-controller pccd;
+        segment-list TO-R2 {
+            50002 label 50002;
+        }
+        segment-list TO-R6 {
+            50006 label 50006;
+        }
+        inactive: compute-profile RED {
+            admin-group include-all red;
+        }
+        inactive: source-routing-path TO-R6 {
+            to 6.6.6.6;
+            color 500;
+            primary {
+                TO-R6 {
+                    inactive: bfd-liveness-detection {
+                        sbfd {
+                            remote-discriminator 700;
+                        }
+                        minimum-interval 50;
+                        multiplier 3;
+                    }
+                }
+            }
+        }
+        inactive: source-routing-path TO-R2 {
+            to 2.2.2.2;
+            color 500;
+            primary {
+                TO-R2;
+            }
+        }
+        inherit-label-nexthops;
+        use-transport-class;
+    }
+    pcep {
+        pce northstar {
+            local-address 10.102.144.10;
+            destination-ipv4-address 192.168.122.9;
+            destination-port 4189;
+            pce-type active stateful;
+            lsp-provisioning;
+            p2mp-lsp-report-capability;
+            p2mp-lsp-update-capability;
+            p2mp-lsp-init-capability;
+            lsp-cleanup-timer 30;
+            spring-capability;
+            delegation-cleanup-timeout 10;
+            pce-traffic-steering;
+        }
+    }
+}

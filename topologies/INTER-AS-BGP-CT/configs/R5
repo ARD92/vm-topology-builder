@@ -1,0 +1,219 @@
+
+## Last commit: 2021-12-28 19:25:20 UTC by root
+version 21.3R1.6;
+groups {
+    FAM_ISO {
+        interfaces {
+            <*> {
+                unit 0 {
+                    family iso;
+                    family mpls;
+                }
+            }
+        }
+    }
+}
+apply-groups FAM_ISO;
+system {
+    host-name R5;
+    root-authentication {
+        encrypted-password "$6$2QtvYcNM$fAkghyAJFZAkhhzTMOy6ZTNswZLegYnVJlVligjEphY6tFPBT7ND/B9zZBQ8HcsRECpQnhRlMl.jtv5nC3RQe0"; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    login {
+        user emsuser {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$6$magX.rJhQ5XNoMRj$KWAw7xBAEvXbbd6l/ZIO3beKOQE7RZGHyArpIOzTN68uxoSA1GXRSpN40W.pODkxscEw.TUe1JH5q49mJd.Pn."; ## SECRET-DATA
+            }
+        }
+        user jtac {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$6$dIQ.2FK3$70SFlnTxydVjKoV1fXxrOhfzslgCwPJ9APnfY6lO0m4EW9KM4aY3aTplInEQ04Zyp/voqiANJme1AzHZEcDuV1"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+            rfc-compliant;
+        }
+        outbound-ssh {
+            client EMS-192.168.122.6 {
+                device-id 079d0bb7-6965-4b12-84c4-8ad7246c0d7e.JUNOS;
+                secret "$9$zKjpFApuO1hclREVwYgUD69CuIEXxN2oJ-d.PfT3nRhcSvWVwYGjHevs24ojifTzF9AOBElKMz3evLXbwmf5QF/Ap0EhrOBclKMN-YgoZGi"; ## SECRET-DATA
+                keep-alive;
+                services netconf;
+                192.168.122.6 port 7804;
+            }
+        }
+    }
+    syslog {
+        file default-log-messages {
+            any any;
+            match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL";
+            structured-data;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+chassis {
+    network-services enhanced-ip;
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            description "TO R4";
+            family inet {
+                address 172.16.30.2/30;
+            }
+        }
+    }
+    ge-0/0/1 {
+        unit 0 {
+            description "TO R7";
+            family inet {
+                address 172.16.30.9/30;
+            }
+        }
+    }
+    ge-0/0/2 {
+        description "To R6";
+        unit 0 {
+            family inet {
+                address 172.16.30.13/30;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.102.144.5/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM61BB84FB7D;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 5.5.5.5/32;
+            }
+            family iso {
+                address 49.0303.0005.0505.0500;
+            }
+            family inet6 {
+                address 2001:db8:10:255::5/128;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement FAD-SID {
+        term 10 {
+            from {
+                route-filter 5.5.5.5/32 exact;
+            }
+            then {
+                prefix-segment {
+                    algorithm 128 index 105 node-segment;
+                    algorithm 129 index 205 node-segment;
+                    index 5;
+                    node-segment;
+                }
+                accept;
+            }
+        }
+    }
+}
+routing-options {
+    flex-algorithm 128 {
+        definition {
+            metric-type igp-metric;
+            spf;
+            priority 100;
+        }
+    }
+    static {
+        route 193.10.1.0/30 next-hop 10.102.144.253;
+        route 192.168.122.0/24 next-hop 10.102.144.253;
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    isis {
+        interface ge-0/0/0.0 {
+            level 2 {
+                te-metric 20;
+                metric 100;
+            }
+            point-to-point;
+        }
+        interface ge-0/0/1.0 {
+            level 2 {
+                te-metric 20;
+                metric 150;
+            }
+            point-to-point;
+        }
+        interface ge-0/0/2.0 {
+            level 2 {
+                te-metric 10;
+                metric 200;
+            }
+            point-to-point;
+        }
+        interface lo0.0 {
+            passive;
+        }
+        source-packet-routing {
+            srgb start-label 60000 index-range 5000;
+            node-segment ipv4-index 5;
+            flex-algorithm [ 128 129 ];
+        }
+        level 1 disable;
+        traffic-engineering {
+            advertisement always;
+        }
+        export FAD-SID;
+    }
+    mpls {
+        lsp-external-controller pccd;
+        interface fxp0.0 {
+            disable;
+        }
+        interface all;
+    }
+}

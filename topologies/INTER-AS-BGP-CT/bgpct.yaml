@@ -1,0 +1,284 @@
+#                          +----------+                                          +---------+
+#                          |          |                                          |         |
+#                  +-------+    R1    +--------+                    +------------+   R5    +-----------+
+#                  |       |          |        |                    |            |         |           |
+#                  |       +-----+----+        |                    |            +---------+           |
+#                  |             |         +---+----+           +---+----+                        +----+----+
+#             +----+---+         |         |        |           |        |                        |         |
+#             |        |         |         |   R2   +-----------+   R4   +--+                     |    R6   |
+#  +----------+   R0   |         |         |        |           |        |  |                     |         |
+#  |          |        |         |         +----+---+           +---+----+  |                     +-----+---+
+#  |          +---+----+         |              |                   |       |                           |
+#  |              |         +----+----+         |                   |       |     +---------+           |
+#  |              |         |         |         |                   |       |     |         |           |
+#  |              +---------+   R3    +---------+                   +-------+-----+    R7   +-----------+
+#  |                        |         |                                     |     |         |
+#  |                        +---------+                                     |     +---------+
+#  |                                                                        |
+#  |                                                                        |
+#  |                                                                        |
+#  |                                                                        |
+#  |                                               +------------+           |
+#  +-----------------------------------------------+            |           |
+#                                                  |    R8      +-----------+
+#                                                  |            |
+#                                                  +------------+
+#  
+
+---
+network_nodes:
+  - 
+    name: "R0"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8610
+    pfe_port: 8620
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R0_R1"
+        intf: "ge-0.0.0-R0"
+        peerintf: "ge-0.0.0-R1"
+      - name: "R0_R3"
+        intf: "ge-0.0.1-R0"
+        peerintf: "ge-0.0.0-R3"
+      - name: "R0_R8"
+        intf: "ge-0.0.2-R0"
+        peerintf: "ge-0.0.0-R8"
+      - name: "R0_CE1"
+        intf: "ge-0.0.3-R0"
+        peerintf: 
+
+  - 
+    name: "R1"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8611
+    pfe_port: 8621
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R0_R1"
+        intf: "ge-0.0.0-R1"
+        peerintf: "ge-0.0.0-R0"
+      - name: "R1_R3"
+        intf: "ge-0.0.1-R1"
+        peerintf: "ge-0.0.1-R3"
+      - name: "R1_R2"
+        intf: "ge-0.0.2-R1"
+        peerintf: "ge-0.0.0-R2"
+  - 
+    name: "R2"
+    imagePath: "/home/aprabh/sr-test/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.2-20211215.421.qcow2"
+    pfeImage: "vFPC-20211115.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8612
+    pfe_port: 8622
+    link: 
+     - name: "R1_R2"
+       intf: "ge-0.0.0-R2"
+       peerintf: "ge-0.0.2-R1"
+     - name: "R2_R3"
+       intf: "ge-0.0.1-R2"
+       peerintf: "ge-0.0.2-R3"
+     - name: "R2_R4"
+       intf: "ge-0.0.2-R2"
+       peerintf: "ge-0.0.0-R4"
+     - name: "R2_R8"
+       intf: "ge-0.0.3-R2"
+       peerintf: "ge-0.0.3-R8"
+  - 
+    name: "R3"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8613
+    pfe_port: 8623
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R0_R3"
+        intf: "ge-0.0.0-R3"
+        peerintf: "ge-0.0.1-R0"
+      - name: "R1_R3"
+        intf: "ge-0.0.1-R3"
+        peerintf: "ge-0.0.1-R1"
+      - name: "R2_R3"
+        intf: "ge-0.0.2-R3"
+        peerintf: "ge-0.0.1-R2"
+  - 
+    name: "R4"
+    imagePath: "/home/aprabh/sr-test/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.2-20211215.421.qcow2"
+    pfeImage: "vFPC-20211115.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8614
+    pfe_port: 8624
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R2_R4"
+        intf: "ge-0.0.0-R4"
+        peerintf: "ge-0.0.2-R2"
+      - name: "R4_R5"
+        intf: "ge-0.0.1-R4"
+        peerintf: "ge-0.0.0-R5"
+      - name: "R4_R7"
+        intf: "ge-0.0.2-R4"
+        peerintf: "ge-0.0.0-R7"
+      - name: "R4_R8"
+        intf: "ge-0.0.3-R4"
+        peerintf: "ge-0.0.1-R8"
+  - 
+    name: "R5"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8615
+    pfe_port: 8625
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R4_R5"
+        intf: "ge-0.0.0-R5"
+        peerintf: "ge-0.0.1-R4"
+      - name: "R5_R7"
+        intf: "ge-0.0.1-R5"
+        peerintf: "ge-0.0.1-R7"
+      - name: "R5_R6"
+        intf: "ge-0.0.2-R5"
+        peerintf: "ge-0.0.0-R6"
+  - 
+    name: "R6"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8616
+    pfe_port: 8626
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R5_R6"
+        intf: "ge-0.0.0-R6"
+        peerintf: "ge-0.0.2-R5"
+      - name: "R6_R7"
+        intf: "ge-0.0.1-R6"
+        peerintf: "ge-0.0.2-R7"
+      - name: "R6_CE"
+        intf: "ge-0.0.2-R6"
+        peerintf: 
+  - 
+    name: "R7"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8617
+    pfe_port: 8627
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R4_R7"
+        intf: "ge-0.0.0-R7"
+        peerintf: "ge-0.0.2-R4"
+      - name: "R5_R7"
+        intf: "ge-0.0.1-R7"
+        peerintf: "ge-0.0.1-R5"
+      - name: "R6_R7"
+        intf: "ge-0.0.2-R7"
+        peerintf: "ge-0.0.1-R6"
+  - 
+    name: "R8"
+    imagePath: "/home/aprabh/sr-test/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.2-20211215.421.qcow2"
+    pfeImage: "vFPC-20211115.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8618
+    pfe_port: 8628
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "R0_R8"
+        intf: "ge-0.0.0-R8"
+        peerintf: "ge-0.0.2-R0"
+      - name: "R4_R8"
+        intf: "ge-0.0.1-R8"
+        peerintf: "ge-0.0.3-R4"
+      - name: "R8_CE"
+        intf: "ge-0.0.2-R8"
+        peerintf: 
+      - name: "R2_R8"
+        intf: "ge-0.0.3-R8"
+        peerintf: "ge-0.0.3-R2"

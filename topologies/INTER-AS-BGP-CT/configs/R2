@@ -1,0 +1,583 @@
+
+## Last commit: 2021-12-29 20:45:51 UTC by root
+version 22.2-20211215.421;
+groups {
+    FAM_ISO {
+        interfaces {
+            <*> {
+                unit 0 {
+                    family iso;
+                    family mpls;
+                }
+            }
+        }
+    }
+}
+apply-groups FAM_ISO;
+system {
+    host-name R2;
+    root-authentication {
+        encrypted-password "$6$E.bkak66$T9iI8DgqFQRsyi8bR1XdtNkJY3FSUAOPxwzIBLlp7Yx5WrKZwSXtZYI/ClouN/WlxOkAXqzI3U7jD4ltKxlVc0"; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    login {
+        user emsuser {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$6$KYh08BMTkdj3EYNp$sXqK7n.N/wbrdO2PYlAF3YvHLVQByXKdy5dkA1KWunGgZDwCg2rJGd5a3LQ95/P7ND4Gt6fJwX2xxGFr4RqrN0"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+            rfc-compliant;
+        }
+        outbound-ssh {
+            client EMS-192.168.122.6 {
+                device-id 9545bd0e-acdd-4ed1-a515-e6ccc7682fc1.JUNOS;
+                secret "$9$D2iP5n/Ct0BQzlKvWx7Hq.mFnREcKWLIRyKMW-dUjiHfT9Ap1Ic6/hSrlLXNdbYgJik.QFn.mBIhSMW7-Vs2aiHm5z3Vwz369OBRhSylM"; ## SECRET-DATA
+                keep-alive;
+                services netconf;
+                192.168.122.6 port 7804;
+            }
+        }
+    }
+    syslog {
+        file default-log-messages {
+            any any;
+            match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL";
+            structured-data;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+chassis {
+    network-services enhanced-ip;
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            description "TO R1";
+            family inet {
+                address 172.16.10.14/30;
+            }
+        }
+    }
+    ge-0/0/1 {
+        unit 0 {
+            description "TO R3";
+            family inet {
+                address 172.16.10.17/30;
+            }
+        }
+    }
+    ge-0/0/2 {
+        flexible-vlan-tagging;
+        unit 0 {
+            description "TO R4";
+            vlan-id 100;
+            family inet {
+                address 172.16.20.1/30;
+            }
+            family mpls;
+        }
+        unit 10 {
+            description "TEST HTM";
+            vlan-id 10;
+            family inet6 {
+                address 2001::11/64;
+            }
+        }
+    }
+    ge-0/0/3 {
+        unit 0 {
+            family inet {
+                address 172.16.40.10/30;
+            }
+            family mpls;
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.102.144.2/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM61BB851106;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 2.2.2.2/32;
+            }
+            family iso {
+                address 49.0001.0002.0202.0200;
+            }
+            family inet6 {
+                address 2001:db8:10:255::2/128;
+            }
+        }
+        unit 100 {
+            family inet {
+                address 2.2.2.100/32;
+            }
+            family inet6 {
+                address 2001:db8:100:255::2/128;
+            }
+        }
+        inactive: unit 101 {
+            family inet {
+                address 100.0.0.2/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement ADD_COLOR_EXPORT {
+        term 10 {
+            from {
+                protocol bgp;
+                community TARGET-128;
+            }
+            then {
+                community add COLOR-128;
+            }
+        }
+    }
+    policy-statement ADD_VPN_COLOR_EXPORT {
+        term 10 {
+            then {
+                community add COLOR-128;
+            }
+        }
+    }
+    policy-statement ADVERTISE-COLOR-TC {
+        term 10 {
+            from rib bgp.transport.3;
+            then accept;
+        }
+    }
+    policy-statement ADVERTISE-LO-PSID {
+        term 50 {
+            from {
+                route-filter 2.2.2.2/32 exact;
+            }
+            then accept;
+        }
+        term 10 {
+            from {
+                route-filter 1.1.1.1/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+        term 20 {
+            from {
+                route-filter 10.10.10.10/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+        term 40 {
+            from {
+                route-filter 3.3.3.3/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+    }
+    policy-statement ADVERTISE-TO-R4 {
+        term 10 {
+            from {
+                route-filter 10.10.10.10/32 exact;
+                route-filter 2.2.2.2/32 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement ADVERTISE-TO-R8 {
+        term 10 {
+            from {
+                route-filter 10.10.10.10/32 exact;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+        term 30 {
+            from {
+                route-filter 2.2.2.2/32 exact;
+            }
+            then {
+                prefix-segment {
+                    index 2;
+                    node-segment;
+                }
+                accept;
+            }
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement FAD-SID {
+        term 10 {
+            from {
+                route-filter 2.2.2.2/32 exact;
+            }
+            then {
+                prefix-segment {
+                    algorithm 128 index 102 node-segment;
+                    algorithm 129 index 202 node-segment;
+                    index 2;
+                    node-segment;
+                }
+                accept;
+            }
+        }
+    }
+    policy-statement FROM-BGP-TO-ISIS {
+        term 10 {
+            from {
+                route-filter 4.4.4.4/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+        term 20 {
+            from {
+                route-filter 5.5.5.5/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+        term 30 {
+            from {
+                route-filter 6.6.6.6/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+        term 40 {
+            from {
+                route-filter 7.7.7.7/32 exact;
+                prefix-segment;
+            }
+            then {
+                prefix-segment {
+                    redistribute;
+                }
+                accept;
+            }
+        }
+    }
+    policy-statement HTM-ADV-LO {
+        term 10 {
+            from {
+                route-filter 2001:db8:100:255::2/128 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement IMPORT-ALL {
+        term 10 {
+            then accept;
+        }
+    }
+    policy-statement LEAK-R2-L0 {
+        term 10 {
+            from {
+                route-filter 2.2.2.2/32 exact;
+                route-filter 3.3.3.3/32 exact;
+                route-filter 10.10.10.10/32 exact;
+                route-filter 1.1.1.1/32 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement LEAK-STATIC-TO-INET3 {
+        term 10 {
+            from {
+                protocol static;
+                route-filter 4.4.4.4/32 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement LEAK-TO-INET3 {
+        term 10 {
+            from {
+                protocol direct;
+                route-filter 2.2.2.2/32 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    community COLOR-128 members color:0:128;
+    community COLOR-129 members color:0:129;
+    community TARGET-128 members target:100:128;
+    community TC-128 members transport-target:0:128;
+    community TC-129 members transport-target:0:129;
+}
+routing-instances {
+    HTM-1 {
+        instance-type virtual-router;
+        routing-options {
+            router-id 2.2.2.100;
+        }
+        protocols {
+            bgp {
+                group TEST {
+                    type external;
+                    family inet6 {
+                        unicast;
+                    }
+                    export HTM-ADV-LO;
+                    peer-as 20;
+                    local-as 21;
+                    neighbor 2001::10;
+                }
+            }
+        }
+        interface ge-0/0/2.10;
+        interface lo0.100;
+    }
+    inactive: VPN-1 {
+        instance-type vrf;
+        interface lo0.101;
+        route-distinguisher 100:102;
+        vrf-target target:100:128;
+        vrf-table-label;
+    }
+}
+routing-options {
+    flex-algorithm 128 {
+        definition {
+            strict-spf;
+            priority 100;
+            admin-group include-all red;
+        }
+        color 128;
+    }
+    flex-algorithm 129 {
+        definition {
+            strict-spf;
+            priority 200;
+            admin-group include-all yellow;
+        }
+        color 129;
+    }
+    route-distinguisher-id 2.2.2.2;
+    rib inet.3;
+    interface-routes {
+        rib-group inet LEAK-TO-INET3;
+    }
+    router-id 2.2.2.2;
+    autonomous-system 65400;
+    static {
+        route 193.10.1.0/30 next-hop 10.102.144.253;
+        route 192.168.122.0/24 next-hop 10.102.144.253;
+    }
+    rib-groups {
+        inactive: LEAK {
+            import-rib [ inet.3 inet.0 ];
+        }
+        LEAK-TO-INET3 {
+            import-rib [ inet.0 inet.3 ];
+            import-policy LEAK-TO-INET3;
+        }
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    bgp {
+        group EBGP-R4_AS-65401 {
+            type external;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+                unicast;
+            }
+            family inet6 {
+                unicast;
+            }
+            export ADVERTISE-TO-R4;
+            peer-as 65401;
+            neighbor 172.16.20.2;
+            advertise-prefix-sid;
+            accept-prefix-sid;
+            advertise-srgb;
+        }
+        group RR {
+            type internal;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+                transport;
+            }
+            family inet-vpn {
+                unicast;
+            }
+            cluster 2.2.2.2;
+            neighbor 10.10.10.10 {
+                local-address 2.2.2.2;
+            }
+        }
+        inactive: group EBGP-R8_AS-65402 {
+            type external;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+                transport;
+            }
+            export ADVERTISE-TO-R8;
+            peer-as 65402;
+            neighbor 172.16.40.9;
+            advertise-prefix-sid;
+            accept-prefix-sid;
+            advertise-srgb;
+        }
+        group EBGP-R4-LO {
+            type external;
+            local-address 2.2.2.2;
+            family inet-vpn {
+                unicast;
+            }
+            peer-as 65401;
+            neighbor 4.4.4.4 {
+                multihop {
+                    no-nexthop-change;
+                }
+            }
+        }
+    }
+    isis {
+        interface ge-0/0/0.0 {
+            point-to-point;
+        }
+        interface ge-0/0/1.0 {
+            point-to-point;
+        }
+        interface ge-0/0/2.0;
+        interface lo0.0 {
+            passive;
+        }
+        source-packet-routing {
+            srgb start-label 50000 index-range 5000;
+            node-segment ipv4-index 2;
+            flex-algorithm [ 128 129 ];
+        }
+        level 1 disable;
+        traffic-engineering {
+            advertisement always;
+        }
+        export [ FROM-BGP-TO-ISIS FAD-SID ];
+    }
+    mpls {
+        lsp-external-controller pccd;
+        admin-groups {
+            red 10;
+            yellow 20;
+        }
+        icmp-tunneling;
+        label-range {
+            srgb-label-range 70000 80000;
+        }
+        interface all;
+        interface fxp0.0 {
+            disable;
+        }
+        interface ge-0/0/0.0 {
+            admin-group yellow;
+        }
+        interface ge-0/0/1.0 {
+            admin-group red;
+        }
+    }
+    source-packet-routing {
+        lsp-external-controller pccd;
+    }
+}

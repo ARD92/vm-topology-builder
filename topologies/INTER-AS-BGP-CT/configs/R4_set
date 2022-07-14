@@ -1,0 +1,261 @@
+
+set version 22.2-20211215.421
+set groups FAM_ISO interfaces <*> unit 0 family iso
+set groups FAM_ISO interfaces <*> unit 0 family mpls
+set apply-groups FAM_ISO
+set system host-name R4
+set system root-authentication encrypted-password "$6$U/s4p71B$mOM3Qj8daTvGNfTzS58pp4FjSLUkc5zgXOACC6frvqE9eARSkPLfSYyP6MAF1upf9XLv4B7V8r4hFDNl1v5Di/"
+set system scripts language python
+set system login user emsuser uid 2001
+set system login user emsuser class super-user
+set system login user emsuser authentication encrypted-password "$6$Fg8y5iv0T2AFKLE5$G2brZIsQq821ox2KDBZDJoxOrE9kTc7WEn2IDOmjVnAXDJoePG1aZpF/a3zuR/3HupqRhLzoBkzICDgYKT1PS0"
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services netconf rfc-compliant
+set system services outbound-ssh client EMS-192.168.122.6 device-id a66eaa72-05d4-4168-adc2-47f8f5e8a424.JUNOS
+set system services outbound-ssh client EMS-192.168.122.6 secret "$9$6./x9O1EcyrKMEhgoaZji.P5Tn/hcyMLxREdbw2aJ5QzFCt0ORhylTzBIhcvMaZGDmf3nCO1RF3vW8LN-fTQz9AtuOIRSu0xNVwg469CpIE"
+set system services outbound-ssh client EMS-192.168.122.6 keep-alive
+set system services outbound-ssh client EMS-192.168.122.6 services netconf
+set system services outbound-ssh client EMS-192.168.122.6 192.168.122.6 port 7804
+set system syslog file default-log-messages any any
+set system syslog file default-log-messages match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL"
+set system syslog file default-log-messages structured-data
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set chassis network-services enhanced-ip
+set interfaces ge-0/0/0 flexible-vlan-tagging
+set interfaces ge-0/0/0 unit 0 description "TO R2"
+set interfaces ge-0/0/0 unit 0 vlan-id 100
+set interfaces ge-0/0/0 unit 0 family inet address 172.16.20.2/30
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces ge-0/0/0 unit 10 description "TEST HTM"
+set interfaces ge-0/0/0 unit 10 vlan-id 10
+set interfaces ge-0/0/0 unit 10 family inet6 address 2001::10/64
+set interfaces ge-0/0/1 unit 0 description "TO R5"
+set interfaces ge-0/0/1 unit 0 family inet address 172.16.30.1/30
+set interfaces ge-0/0/2 unit 0 description "To R7"
+set interfaces ge-0/0/2 unit 0 family inet address 172.16.30.5/30
+set interfaces ge-0/0/3 description "TO R8"
+set interfaces ge-0/0/3 flexible-vlan-tagging
+set interfaces ge-0/0/3 unit 0 vlan-id 10
+set interfaces ge-0/0/3 unit 0 family inet address 172.16.40.6/30
+set interfaces ge-0/0/3 unit 100 vlan-id 100
+set interfaces ge-0/0/3 unit 100 family inet6 address 2001::12/64
+set interfaces fxp0 unit 0 family inet address 10.102.144.4/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61BB8513B4
+set interfaces lo0 unit 0 family inet address 4.4.4.4/32
+set interfaces lo0 unit 0 family inet address 127.0.0.1/32
+set interfaces lo0 unit 0 family iso address 49.0303.0004.0404.0400
+set interfaces lo0 unit 0 family inet6 address 2001:db8:10:255::4/128
+set interfaces lo0 unit 100 family inet address 4.4.4.100/32
+set interfaces lo0 unit 100 family inet6 address 2001:db8:100:255::4/128
+set interfaces lo0 unit 200 family inet address 4.4.100.100/32
+set interfaces lo0 unit 200 family inet6 address 2001:db8:110:255::4/128
+set policy-options policy-statement ADD_COLOR_EXPORT term 10 from protocol bgp
+set policy-options policy-statement ADD_COLOR_EXPORT term 10 from community TARGET-128
+set policy-options policy-statement ADD_COLOR_EXPORT term 10 then community add COLOR-128
+set policy-options policy-statement ADVERTISE-LO-PSID term 10 from route-filter 4.4.4.4/32 exact
+set policy-options policy-statement ADVERTISE-LO-PSID term 10 then accept
+set policy-options policy-statement ADVERTISE-LO-PSID term 20 from route-filter 5.5.5.5/32 exact
+set policy-options policy-statement ADVERTISE-LO-PSID term 20 from prefix-segment
+set policy-options policy-statement ADVERTISE-LO-PSID term 20 then prefix-segment redistribute
+set policy-options policy-statement ADVERTISE-LO-PSID term 20 then accept
+set policy-options policy-statement ADVERTISE-LO-PSID term 30 from route-filter 6.6.6.6/32 exact
+set policy-options policy-statement ADVERTISE-LO-PSID term 30 from prefix-segment
+set policy-options policy-statement ADVERTISE-LO-PSID term 30 then prefix-segment redistribute
+set policy-options policy-statement ADVERTISE-LO-PSID term 30 then accept
+set policy-options policy-statement ADVERTISE-LO-PSID term 40 from route-filter 7.7.7.7/32 exact
+set policy-options policy-statement ADVERTISE-LO-PSID term 40 from prefix-segment
+set policy-options policy-statement ADVERTISE-LO-PSID term 40 then prefix-segment redistribute
+set policy-options policy-statement ADVERTISE-LO-PSID term 40 then accept
+set policy-options policy-statement ADVERTISE-TO-R2 term loopback from route-filter 4.4.4.4/32 exact
+set policy-options policy-statement ADVERTISE-TO-R2 term loopback from route-filter 6.6.6.6/32 exact
+set policy-options policy-statement ADVERTISE-TO-R2 term loopback then accept
+set policy-options policy-statement ADVERTISE-TO-R2 term 10 from community TC-128
+set policy-options policy-statement ADVERTISE-TO-R2 term 10 then accept
+set policy-options policy-statement ADVERTISE-TO-R2 term 20 from community TC-129
+set policy-options policy-statement ADVERTISE-TO-R2 term 20 then accept
+set policy-options policy-statement ADVERTISE-TO-R2 term 30 then reject
+set policy-options policy-statement ADVERTISE-TO-R8 term 10 from community TC-500
+set policy-options policy-statement ADVERTISE-TO-R8 term 10 then accept
+set policy-options policy-statement ADVERTISE-TO-R8 term 20 then reject
+set policy-options policy-statement FAD-SID term 10 from route-filter 4.4.4.4/32 exact
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 128 index 104
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 128 node-segment
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 129 index 204
+set policy-options policy-statement FAD-SID term 10 then prefix-segment algorithm 129 node-segment
+set policy-options policy-statement FAD-SID term 10 then prefix-segment index 4
+set policy-options policy-statement FAD-SID term 10 then prefix-segment node-segment
+set policy-options policy-statement FAD-SID term 10 then accept
+set policy-options policy-statement FROM-BGP-TO-ISIS term 10 from route-filter 1.1.1.1/32 exact
+set policy-options policy-statement FROM-BGP-TO-ISIS term 10 from prefix-segment
+set policy-options policy-statement FROM-BGP-TO-ISIS term 10 then prefix-segment redistribute
+set policy-options policy-statement FROM-BGP-TO-ISIS term 10 then accept
+set policy-options policy-statement FROM-BGP-TO-ISIS term 20 from route-filter 10.10.10.10/32 exact
+set policy-options policy-statement FROM-BGP-TO-ISIS term 20 from prefix-segment
+set policy-options policy-statement FROM-BGP-TO-ISIS term 20 then prefix-segment redistribute
+set policy-options policy-statement FROM-BGP-TO-ISIS term 20 then accept
+set policy-options policy-statement FROM-BGP-TO-ISIS term 30 from route-filter 2.2.2.2/32 exact
+set policy-options policy-statement FROM-BGP-TO-ISIS term 30 from prefix-segment
+set policy-options policy-statement FROM-BGP-TO-ISIS term 30 then prefix-segment redistribute
+set policy-options policy-statement FROM-BGP-TO-ISIS term 30 then accept
+set policy-options policy-statement FROM-BGP-TO-ISIS term 40 from route-filter 3.3.3.3/32 exact
+set policy-options policy-statement FROM-BGP-TO-ISIS term 40 from prefix-segment
+set policy-options policy-statement FROM-BGP-TO-ISIS term 40 then prefix-segment redistribute
+set policy-options policy-statement FROM-BGP-TO-ISIS term 40 then accept
+set policy-options policy-statement FROM-HTM-TO-INTERNET term 10 from route-filter 2001:db8:100:255::2/128 exact
+set policy-options policy-statement FROM-HTM-TO-INTERNET term 10 then accept
+set policy-options policy-statement FROM-INTERNET-TO-HTM term 10 from route-filter 2001:db8:100:255::8/128 exact
+set policy-options policy-statement FROM-INTERNET-TO-HTM term 10 then accept
+set policy-options policy-statement IMPORT-CT term 10 then accept
+set policy-options policy-statement LEAK-R4-L0 term 10 from route-filter 4.4.4.4/32 exact
+set policy-options policy-statement LEAK-R4-L0 term 10 from route-filter 5.5.5.5/32 exact
+set policy-options policy-statement LEAK-R4-L0 term 10 from route-filter 6.6.6.6/32 exact
+set policy-options policy-statement LEAK-R4-L0 term 10 from route-filter 7.7.7.7/32 exact
+set policy-options policy-statement LEAK-R4-L0 term 10 then accept
+set policy-options policy-statement LEAK-TO-INET3 term 10 from protocol direct
+set policy-options policy-statement LEAK-TO-INET3 term 10 from route-filter 4.4.4.4/32 exact
+set policy-options policy-statement LEAK-TO-INET3 term 10 then accept
+set policy-options policy-statement LEAK-TO-INET3 term 20 then reject
+set policy-options policy-statement NH-SELF term 10 then next-hop self
+set policy-options policy-statement NH-SELF term 10 then accept
+set policy-options community COLOR-128 members color:0:128
+set policy-options community COLOR-500 members color:0:500
+set policy-options community TARGET-128 members target:100:128
+set policy-options community TC-128 members transport-target:0:128
+set policy-options community TC-129 members transport-target:0:129
+set policy-options community TC-500 members transport-target:0:500
+set routing-instances HTM instance-type virtual-router
+set routing-instances HTM routing-options router-id 4.4.4.100
+set routing-instances HTM protocols bgp group TEST type external
+set routing-instances HTM protocols bgp group TEST family inet6 unicast rib-group LEAK-HTM-TO-INTERNET
+set routing-instances HTM protocols bgp group TEST export NH-SELF
+set routing-instances HTM protocols bgp group TEST peer-as 21
+set routing-instances HTM protocols bgp group TEST local-as 20
+set routing-instances HTM protocols bgp group TEST neighbor 2001::11
+set routing-instances HTM protocols bgp traceoptions file bgp-htm
+set routing-instances HTM protocols bgp traceoptions flag all
+set routing-instances HTM interface ge-0/0/0.10
+set routing-instances HTM interface lo0.100
+set routing-instances INTERNET instance-type virtual-router
+set routing-instances INTERNET routing-options router-id 4.4.100.100
+set routing-instances INTERNET protocols bgp group INTERNET type external
+set routing-instances INTERNET protocols bgp group INTERNET family inet6 unicast rib-group LEAK-INTERNET-TO-HTM
+set routing-instances INTERNET protocols bgp group INTERNET export NH-SELF
+set routing-instances INTERNET protocols bgp group INTERNET peer-as 22
+set routing-instances INTERNET protocols bgp group INTERNET local-as 20
+set routing-instances INTERNET protocols bgp group INTERNET neighbor 2001::13
+set routing-instances INTERNET interface ge-0/0/3.100
+set routing-instances INTERNET interface lo0.200
+set routing-options flex-algorithm 128 definition metric-type igp-metric
+set routing-options flex-algorithm 128 definition spf
+set routing-options flex-algorithm 128 definition priority 100
+set routing-options flex-algorithm 128 color 128
+set routing-options flex-algorithm 128 use-transport-class
+set routing-options flex-algorithm 129 definition metric-type te-metric
+set routing-options flex-algorithm 129 definition strict-spf
+set routing-options flex-algorithm 129 definition priority 200
+set routing-options flex-algorithm 129 color 129
+set routing-options flex-algorithm 129 use-transport-class
+set routing-options route-distinguisher-id 4.4.4.4
+set routing-options interface-routes rib-group inet LEAK-TO-INET3
+set routing-options router-id 4.4.4.4
+set routing-options autonomous-system 65401
+set routing-options static route 193.10.1.0/30 next-hop 10.102.144.253
+set routing-options static route 192.168.122.0/24 next-hop 10.102.144.253
+set routing-options rib-groups LEAK-HTM-TO-INTERNET import-rib HTM.inet6.0
+set routing-options rib-groups LEAK-HTM-TO-INTERNET import-rib INTERNET.inet6.0
+set routing-options rib-groups LEAK-HTM-TO-INTERNET import-policy FROM-HTM-TO-INTERNET
+set routing-options rib-groups LEAK-INTERNET-TO-HTM import-rib INTERNET.inet6.0
+set routing-options rib-groups LEAK-INTERNET-TO-HTM import-rib HTM.inet6.0
+set routing-options rib-groups LEAK-INTERNET-TO-HTM import-policy FROM-INTERNET-TO-HTM
+set routing-options rib-groups LEAK-TO-INET3 import-rib inet.0
+set routing-options rib-groups LEAK-TO-INET3 import-rib inet.3
+set routing-options rib-groups LEAK-TO-INET3 import-policy LEAK-TO-INET3
+set routing-options transport-class auto-create
+set routing-options transport-class name TC-500 color 500
+set routing-options transport-class name TC-600 color 600
+set routing-options forwarding-table chained-composite-next-hop transit l3vpn
+set protocols router-advertisement interface fxp0.0
+set protocols bfd sbfd local-discriminator 100
+set protocols bgp group EBGP-TO-R2_AS_65400 type external
+set protocols bgp group EBGP-TO-R2_AS_65400 import IMPORT-CT
+set protocols bgp group EBGP-TO-R2_AS_65400 family inet labeled-unicast rib inet.3
+set protocols bgp group EBGP-TO-R2_AS_65400 family inet transport
+set protocols bgp group EBGP-TO-R2_AS_65400 family inet unicast
+set protocols bgp group EBGP-TO-R2_AS_65400 family inet6 unicast
+set protocols bgp group EBGP-TO-R2_AS_65400 export ADVERTISE-TO-R2
+set protocols bgp group EBGP-TO-R2_AS_65400 peer-as 65400
+set protocols bgp group EBGP-TO-R2_AS_65400 neighbor 172.16.20.1
+set protocols bgp group EBGP-TO-R2_AS_65400 advertise-prefix-sid
+set protocols bgp group EBGP-TO-R2_AS_65400 accept-prefix-sid
+set protocols bgp group EBGP-TO-R2_AS_65400 advertise-srgb
+set protocols bgp group AS65402 type external
+set protocols bgp group AS65402 import IMPORT-CT
+set protocols bgp group AS65402 family inet labeled-unicast rib inet.3
+set protocols bgp group AS65402 family inet transport add-path receive
+set protocols bgp group AS65402 export ADVERTISE-TO-R8
+set protocols bgp group AS65402 peer-as 65402
+set protocols bgp group AS65402 neighbor 172.16.40.5
+set protocols bgp group AS65402 advertise-prefix-sid
+set protocols bgp group AS65402 accept-prefix-sid
+set protocols bgp group AS65402 advertise-srgb
+set protocols bgp group RR type internal
+set protocols bgp group RR family inet labeled-unicast rib inet.3
+set protocols bgp group RR family inet transport
+set protocols bgp group RR family inet-vpn unicast
+set protocols bgp group RR cluster 4.4.4.4
+set protocols bgp group RR neighbor 6.6.6.6 local-address 4.4.4.4
+set protocols bgp group EBGP-R2-LO type external
+set protocols bgp group EBGP-R2-LO family inet-vpn unicast
+set protocols bgp group EBGP-R2-LO peer-as 65400
+set protocols bgp group EBGP-R2-LO neighbor 2.2.2.2 multihop no-nexthop-change
+set protocols isis interface ge-0/0/1.0 level 2 te-metric 20
+set protocols isis interface ge-0/0/1.0 level 2 metric 100
+set protocols isis interface ge-0/0/1.0 point-to-point
+set protocols isis interface ge-0/0/2.0 level 2 te-metric 10
+set protocols isis interface ge-0/0/2.0 level 2 metric 200
+set protocols isis interface ge-0/0/2.0 point-to-point
+set protocols isis interface lo0.0 passive
+set protocols isis source-packet-routing srgb start-label 60000
+set protocols isis source-packet-routing srgb index-range 5000
+set protocols isis source-packet-routing node-segment ipv4-index 4
+set protocols isis source-packet-routing flex-algorithm 128
+set protocols isis source-packet-routing flex-algorithm 129
+set protocols isis level 1 disable
+set protocols isis traffic-engineering advertisement always
+set protocols isis export FROM-BGP-TO-ISIS
+set protocols isis export FAD-SID
+set protocols mpls lsp-external-controller pccd
+set protocols mpls icmp-tunneling
+set protocols mpls label-range srgb-label-range 70000 80000
+set protocols mpls interface fxp0.0 disable
+set protocols mpls interface all
+set protocols source-packet-routing lsp-external-controller pccd
+set protocols source-packet-routing segment-list TO-R6 60006 label 60006
+set protocols source-packet-routing source-routing-path TO-R6 to 6.6.6.6
+set protocols source-packet-routing source-routing-path TO-R6 color 500
+set protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection sbfd remote-discriminator 100
+set protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection minimum-interval 300
+set protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection multiplier 3
+deactivate protocols source-packet-routing source-routing-path TO-R6 primary TO-R6 bfd-liveness-detection
+set protocols source-packet-routing inherit-label-nexthops
+set protocols source-packet-routing use-transport-class
+set protocols pcep pce northstar local-address 10.102.144.10
+set protocols pcep pce northstar destination-ipv4-address 192.168.122.9
+set protocols pcep pce northstar destination-port 4189
+set protocols pcep pce northstar pce-type active
+set protocols pcep pce northstar pce-type stateful
+set protocols pcep pce northstar lsp-provisioning
+set protocols pcep pce northstar spring-capability
+set protocols pcep pce northstar delegation-cleanup-timeout 10
+set protocols pcep pce northstar pce-traffic-steering

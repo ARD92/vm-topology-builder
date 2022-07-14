@@ -1,0 +1,221 @@
+
+## Last commit: 2021-12-28 19:24:18 UTC by root
+version 21.3R1.6;
+groups {
+    FAM_ISO {
+        interfaces {
+            <*> {
+                unit 0 {
+                    family iso;
+                    family mpls;
+                }
+            }
+        }
+    }
+}
+apply-groups FAM_ISO;
+system {
+    host-name R3;
+    root-authentication {
+        encrypted-password "$6$zGGasC3e$Q9DKtQiB4esB3ZVjrXLfKhwreCq2Nm0Cid5tQnYO4DULWYW1AmIBL9Lgoaw5qoJkXwJu/zin8faxv453C9lwx0"; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    login {
+        user emsuser {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$6$qDVeyuSqiDEfnDPY$kHzwOf1AaZiD24k.MMchhKwNFTPpvG7hbmrf8RMy45xSfKSoHT3h1y66U/eX1Q5WrdCz3sZdgWvhDSBQ.JTM.0"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+            rfc-compliant;
+        }
+        outbound-ssh {
+            client EMS-192.168.122.6 {
+                device-id 34747a5a-f692-4efb-9827-1bfdef33c982.JUNOS;
+                secret "$9$b8sJGq.5TFnkqp0BIcS24oZHq9CtIhSB1hrvWx7JGUD.PQFn/ApZUz3n9puLx7-YgGDiP5Q-VwgoJHk.P5Tz6Ap0Rcyk.T3n/tp8Xx7wY"; ## SECRET-DATA
+                keep-alive;
+                services netconf;
+                192.168.122.6 port 7804;
+            }
+        }
+    }
+    syslog {
+        file default-log-messages {
+            any any;
+            match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL";
+            structured-data;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+chassis {
+    network-services enhanced-ip;
+}
+interfaces {
+    ge-0/0/0 {
+        description "TO R0";
+        unit 0 {
+            family inet {
+                address 172.16.10.6/30;
+            }
+        }
+    }
+    ge-0/0/1 {
+        description "To R1";
+        unit 0 {
+            description "TO R1";
+            family inet {
+                address 172.16.10.10/30;
+            }
+        }
+    }
+    ge-0/0/2 {
+        description "To R2";
+        unit 0 {
+            family inet {
+                address 172.16.10.18/30;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 10.102.144.3/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM61BB84CBCE;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 3.3.3.3/32;
+            }
+            family iso {
+                address 49.0001.0003.0303.0300;
+            }
+            family inet6 {
+                address 2001:db8:10:255::3/128;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement FAD-SID {
+        term 10 {
+            from {
+                route-filter 3.3.3.3/32 exact;
+            }
+            then {
+                prefix-segment {
+                    algorithm 128 index 103 node-segment;
+                    algorithm 129 index 203 node-segment;
+                    index 3;
+                    node-segment;
+                }
+                accept;
+            }
+        }
+    }
+}
+routing-options {
+    flex-algorithm 128 {
+        definition {
+            strict-spf;
+            priority 100;
+            admin-group include-all red;
+        }
+    }
+    flex-algorithm 129 {
+        definition {
+            strict-spf;
+            priority 200;
+            admin-group include-all yellow;
+        }
+    }
+    static {
+        route 193.10.1.0/30 next-hop 10.102.144.253;
+        route 192.168.122.0/24 next-hop 10.102.144.253;
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    isis {
+        interface ge-0/0/0.0 {
+            point-to-point;
+        }
+        interface ge-0/0/1.0 {
+            point-to-point;
+        }
+        interface ge-0/0/2.0 {
+            point-to-point;
+        }
+        interface lo0.0 {
+            passive;
+        }
+        source-packet-routing {
+            srgb start-label 50000 index-range 5000;
+            node-segment ipv4-index 3;
+            flex-algorithm [ 128 129 ];
+        }
+        level 1 disable;
+        traffic-engineering {
+            advertisement always;
+        }
+        export FAD-SID;
+    }
+    mpls {
+        lsp-external-controller pccd;
+        admin-groups {
+            red 10;
+            yellow 20;
+        }
+        interface all;
+        interface fxp0.0 {
+            disable;
+        }
+        interface ge-0/0/0.0 {
+            admin-group yellow;
+        }
+        interface ge-0/0/1.0 {
+            admin-group [ red yellow ];
+        }
+        interface ge-0/0/2.0 {
+            admin-group red;
+        }
+    }
+}

@@ -1,0 +1,109 @@
+
+set version 22.2-20211215.421
+set system host-name R8
+set system root-authentication encrypted-password "$6$ffgow3eM$pa0g83buxigp61p/iFykXLuSVyEOrqJdvQ5fXvtz3kJyJgj25yJ5sYL2rpRFM9UKEIN36ZLrfZ/gieqjxr.CU1"
+set system scripts language python
+set system login user emsuser uid 2001
+set system login user emsuser class super-user
+set system login user emsuser authentication encrypted-password "$6$oEpC8LtKeoWRzPr2$C15fVOg2gawXr/UKxJ.rVzuqDENO.J.eTw3zBI4dOWbkeV/Uwc7mV5QE58qfBIB3d1gEWJLNoqMbqEpT1H3Bc0"
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services netconf rfc-compliant
+set system services outbound-ssh client EMS-192.168.122.6 device-id 262c02ea-ff2c-47f0-80f9-764bf2f31528.JUNOS
+set system services outbound-ssh client EMS-192.168.122.6 secret "$9$AY7OtIEKM8dwYvMikmP3nAp0IylVbsJZjvWDiH.5T0B1IylKvLx-VvMYgaJHktu01SrM8XVwYBIEyrlMW-Vwg4Z.P56CtmPEcreXxNdbsJG"
+set system services outbound-ssh client EMS-192.168.122.6 keep-alive
+set system services outbound-ssh client EMS-192.168.122.6 services netconf
+set system services outbound-ssh client EMS-192.168.122.6 192.168.122.6 port 7804
+set system syslog file default-log-messages any any
+set system syslog file default-log-messages match "(UI_COMMIT_COMPLETED)|ifAdminStatus|ifOperStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|(vc add)|(vc delete)|transitioned|Transferred|transfer-file|(license add)|(license delete)|JSRPD_HA_HEALTH_WEIGHT|PKID_PV_CERT_LOAD|PKID_PV_CERT_DEL"
+set system syslog file default-log-messages structured-data
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set chassis network-services enhanced-ip
+set interfaces ge-0/0/0 unit 0 description "TO R0"
+set interfaces ge-0/0/0 unit 0 family inet filter input GE-0/0/0
+set interfaces ge-0/0/0 unit 0 family inet address 172.16.40.1/30
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces ge-0/0/1 description "TO R4"
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 unit 0 vlan-id 10
+set interfaces ge-0/0/1 unit 0 family inet filter input GE-0/0/1
+set interfaces ge-0/0/1 unit 0 family inet address 172.16.40.5/30
+set interfaces ge-0/0/1 unit 0 family mpls
+set interfaces ge-0/0/1 unit 100 vlan-id 100
+set interfaces ge-0/0/1 unit 100 family inet6 address 2001::13/64
+set interfaces ge-0/0/3 description "TO R2"
+set interfaces ge-0/0/3 unit 0 family inet address 172.16.40.9/30
+set interfaces ge-0/0/3 unit 0 family mpls
+set interfaces fxp0 unit 0 family inet address 10.102.144.8/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM61BB8538D4
+set interfaces lo0 unit 0 family inet address 8.8.8.8/32
+set interfaces lo0 unit 0 family inet6 address 2001:db8:10:255::8/128
+set interfaces lo0 unit 100 family inet address 8.8.8.100/32
+set interfaces lo0 unit 100 family inet6 address 2001:db8:100:255::8/128
+set policy-options policy-statement EXPORT-CT term 10 then accept
+set policy-options policy-statement HTM-ADV-LO term 10 from route-filter 2001:db8:100:255::8/128 exact
+set policy-options policy-statement HTM-ADV-LO term 10 then accept
+set policy-options policy-statement IMPORT-CT then accept
+set policy-options resolution-map PNH-MAP mode ip-color
+set firewall family inet filter GE-0/0/0 term 10 then count count-0.0.0
+set firewall family inet filter GE-0/0/0 term 10 then accept
+set firewall family inet filter GE-0/0/1 term 10 then count count-0.0.1
+set firewall family inet filter GE-0/0/1 term 10 then accept
+set routing-instances HTM-INET instance-type virtual-router
+set routing-instances HTM-INET routing-options router-id 8.8.8.100
+set routing-instances HTM-INET protocols bgp group INTERNET type external
+set routing-instances HTM-INET protocols bgp group INTERNET family inet6 unicast
+set routing-instances HTM-INET protocols bgp group INTERNET export HTM-ADV-LO
+set routing-instances HTM-INET protocols bgp group INTERNET peer-as 20
+set routing-instances HTM-INET protocols bgp group INTERNET local-as 22
+set routing-instances HTM-INET protocols bgp group INTERNET neighbor 2001::12
+set routing-instances HTM-INET interface ge-0/0/1.100
+set routing-instances HTM-INET interface lo0.100
+set routing-options route-distinguisher-id 8.8.8.8
+set routing-options autonomous-system 65402
+set routing-options static route 193.10.1.0/30 next-hop 10.102.144.253
+set routing-options static route 192.168.122.0/24 next-hop 10.102.144.253
+set routing-options transport-class auto-create
+set routing-options transport-class name TC-500 color 500
+set routing-options transport-class name TC-600 color 600
+set protocols router-advertisement interface fxp0.0
+set protocols bgp advertise-prefix-sid
+set protocols bgp accept-prefix-sid
+set protocols bgp advertise-srgb
+set protocols bgp group AS65400 type external
+set protocols bgp group AS65400 family inet labeled-unicast rib inet.3
+set protocols bgp group AS65400 family inet transport
+set protocols bgp group AS65400 family inet-vpn unicast
+deactivate protocols bgp group AS65400 family inet-vpn
+set protocols bgp group AS65400 peer-as 65400
+set protocols bgp group AS65400 neighbor 172.16.40.2
+set protocols bgp group AS65400 neighbor 172.16.40.10
+deactivate protocols bgp group AS65400 neighbor 172.16.40.10
+set protocols bgp group AS65400 accept-prefix-sid
+set protocols bgp group AS65401 type external
+set protocols bgp group AS65401 family inet labeled-unicast rib inet.3
+set protocols bgp group AS65401 family inet transport
+set protocols bgp group AS65401 family inet-vpn unicast
+deactivate protocols bgp group AS65401 family inet-vpn
+set protocols bgp group AS65401 peer-as 65401
+set protocols bgp group AS65401 neighbor 172.16.40.6
+set protocols bgp group AS65401 accept-prefix-sid
+set protocols bgp import IMPORT-CT
+set protocols bgp export EXPORT-CT
+set protocols mpls traffic-engineering bgp-igp-both-ribs
+set protocols mpls icmp-tunneling
+set protocols mpls label-range srgb-label-range 80000 81000
+set protocols mpls interface ge-0/0/0.0
+set protocols mpls interface ge-0/0/1.0
+set protocols mpls interface ge-0/0/3.9
+set protocols mpls interface ge-0/0/3.0

@@ -249,6 +249,11 @@ The default user/password is root/Juniper
 ```
 The XML files are stored under the directory templates with the topology file name as the subdirectory
 
+#### Initial config on the VMs
+```
+python3 initial_config.py -t <topology.yaml> 
+```
+This will login to the VMs and configure the root authentication and enable SSH.
 
 ### Setup Instructions 
 #### Installing QEMU-KVM dependencies 
@@ -269,3 +274,4 @@ using go get, install all necessary packages
 go build vm-topo.go
 ```
 Run the application based on the above steps
+

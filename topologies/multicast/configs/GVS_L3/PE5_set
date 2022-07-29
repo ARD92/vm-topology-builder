@@ -1,0 +1,41 @@
+
+set version 22.1R1.1
+set groups IPV6 interfaces <*> unit <*> family inet6
+set apply-groups IPV6
+set system host-name PE5
+set system root-authentication encrypted-password "$6$muzUYD1h$tbVFAGzbpilVFGR/0g0D3DPsuP/WkdXT7VLqEPlsnUwKfcJxvvd6WUkRuHMxTMwa5PJ0RP4Don9BLoEjZi4eF/"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 description "to PE6"
+set interfaces ge-0/0/0 unit 0 family inet address 10.1.1.16/31
+set interfaces ge-0/0/1 unit 0 description "to Cust-2"
+set interfaces ge-0/0/1 unit 0 family inet address 192.168.3.2/24
+set interfaces ge-0/0/2 unit 0 description "to PE2"
+set interfaces ge-0/0/2 unit 0 family inet address 10.1.1.15/31
+set interfaces fxp0 unit 0 family inet address 192.167.1.7/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM62D07A920F
+set interfaces lo0 unit 0 family inet address 1.1.1.5/32
+set policy-options policy-statement EXPORT-CUST2 term 10 from route-filter 192.168.3.0/24 orlonger
+set policy-options policy-statement EXPORT-CUST2 term 10 then accept
+set policy-options policy-statement EXPORT-CUST2 term 20 then reject
+set routing-options router-id 1.1.1.5
+set protocols igmp interface ge-0/0/1.0 version 3
+set protocols ospf area 0.0.0.0 interface ge-0/0/0.0
+set protocols ospf area 0.0.0.0 interface ge-0/0/2.0
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols ospf export EXPORT-CUST2
+set protocols pim rp static address 1.1.1.1 group-ranges 232.0.0.0/8
+set protocols pim interface all mode sparse
+set protocols pim interface fxp0.0 disable

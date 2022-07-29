@@ -1,0 +1,35 @@
+
+set version 22.1R1.1
+set groups IPV6 interfaces <*> unit <*> family inet6
+set apply-groups IPV6
+set system host-name PE4
+set system root-authentication encrypted-password "$6$ZxRybVh5$9SHvffrBEjElBlsEAz85u3l9HNpoQPTXfDynDUCMfV0oOiW0mivLhG95Qb9.YWHlMcRY0.ZYiZM/eHaXAq3ny0"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 description "to cust-1"
+set interfaces ge-0/0/1 unit 0 description "to PE3"
+set interfaces ge-0/0/1 unit 0 family inet address 10.1.1.11/31
+set interfaces ge-0/0/2 unit 0 description "to P2"
+set interfaces ge-0/0/2 unit 0 family inet address 10.1.1.13/31
+set interfaces fxp0 unit 0 family inet address 192.167.1.6/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM62D07A9243
+set interfaces lo0 unit 0 family inet address 1.1.1.4/32
+set routing-options router-id 1.1.1.4
+set protocols igmp interface ge-0/0/0.0 version 3
+set protocols ospf area 0.0.0.0 interface ge-0/0/1.0
+set protocols ospf area 0.0.0.0 interface ge-0/0/2.0
+set protocols ospf area 0.0.0.0 interface lo0.0 passive
+set protocols pim interface all mode sparse
+set protocols pim interface fxp0.0 disable

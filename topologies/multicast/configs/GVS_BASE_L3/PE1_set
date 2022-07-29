@@ -1,0 +1,21 @@
+
+set version 22.1R1.1
+set system host-name PE1
+set system root-authentication encrypted-password "$6$5sey3aMu$jCDVWUTJGN051RIOqTF7aYL6tnav/HmAjshOamuOFDMcdC/P/5I6ZA95CDbIrIgzoOJc2w3huv6nfRYITNPgZ."
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 description "to P1"
+set interfaces ge-0/0/0 unit 0 family inet address 10.1.1.0/31
+set interfaces ge-0/0/1 unit 0 description "to PE2"
+set interfaces ge-0/0/1 unit 0 family inet address 10.1.1.2/31
+set interfaces fxp0 unit 0 family inet address 192.167.1.1/24
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32

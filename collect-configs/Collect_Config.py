@@ -3,28 +3,17 @@ __author__: Aravind Prabhakar
 
 used to collect configs from devices.
 
-Usage:
-
-usage: Collect_Config.py [-h] [--action ACTION] [--dir DIR] [--user USER]
-                         [--pwd PWD]
-
-optional arguments:
-  -h, --help       show this help message and exit
-  --action ACTION
-  --dir DIR
-  --user USER
-  --pwd PWD
 
 Example:
 
 1. Collect configs in set format and store it in a directory 
-python Collect_Config.py --action save --dir SE-LAB-SET-CONFIG --user aprabh --pwd Juniper123 --type set
+python Collect_Config.py --action save --dir SE-LAB-SET-CONFIG --user <user> --pwd <password> --type set
 
 2. Collect configs as is in junos hierarchy and store it in a directory 
-python Collect_Config.py --action save --dir SE-LAB-SET-CONFIG --user aprabh --pwd Juniper123
+python Collect_Config.py --action save --dir SE-LAB-SET-CONFIG --user <user> --pwd <password>
 
 3. Load the config based on set or regular
-python Collect_Config.py --action load --user aprabh --pwd Juniper123 --file add_more_vlans
+python Collect_Config.py --action load --user <user> --pwd <password> --file add_more_vlans
 '''
 
 from jnpr.junos import Device

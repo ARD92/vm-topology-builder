@@ -1,0 +1,132 @@
+#                   
+#                     lo0.1             lo0.2
+#                   
+#                   +----------+      +----------+
+#                   |          |      |          |
+#                   |  Cust-1  |      |  Cust-2  |
+#                   |          |      |          |
+#                   +-----+----+      +----+-----+
+#                         |                |
+#                         +-----+     +----+
+#                               |     |
+#                               |     |
+#                               |     |
+#                          +----+-----+-----+                 +----------------+                +----------------+                +----------------+
+#                          |                |                 |                |0.0.1     0.0.0 |                |                |                |
+#                          |                |    L3VPN        |                +----------------+                |0.0.1     0.0.0 +                |
+#                          |    vmx1        +-----------------+    vmx2        |    L3VPN       |     vSRX1      |----------------|     vSRX2      |
+#                          |     lo0.0      |0.0.0       0.0.0|                +                |                |    IPSEC       |                |
+#                          |                |                 |                |                |                |                |                |
+#                          +-------+--------+                 +----------------+                +----------------+                +----------------+
+---
+network_nodes:
+  - 
+    name: "vmx1"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 8196
+    re_cores: 1
+    pfe_cores: 8
+    re_vcpu: 1
+    pfe_vcpu: 8
+    re_port: 8610
+    pfe_port: 8620
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "vmx1_vmx2"
+        intf: "ge-0.0.0-vmx1"
+        peerintf: "ge-0.0.0-vmx2"
+  -
+    name: "vmx2"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img"
+    vhddImage: "vmxhdd.img" 
+    re_memory: 1024
+    pfe_memory: 8196
+    vnfType: "vmx"
+    re_cores: 1
+    pfe_cores: 8
+    re_vcpu: 1
+    pfe_vcpu: 8
+    re_port: 8611
+    pfe_port: 8621
+    link:
+      - name: "vmx1_vmx2"
+        intf: "ge-0.0.0-vmx2"
+        peerintf: "ge-0.0.0-vmx1"
+      - name: "vmx2_vmx3"
+        intf: "ge-0.0.1-vmx2"
+        peerintf: "ge-0.0.0-vmx3"
+  -
+    name: "vmx3"
+    imagePath: "/opt/aprabh/vmx_images/vmx/images/"
+    reImage: "junos-vmx-x86-64-22.1R1.1.qcow2"
+    pfeImage: "vFPC-20220202.img"
+    metadataImage: "metadata-usb-re.img"
+    vhddImage: "vmxhdd.img" 
+    re_memory: 1024
+    pfe_memory: 8196
+    vnfType: "vmx"
+    re_cores: 1
+    pfe_cores: 8
+    re_vcpu: 1
+    pfe_vcpu: 8
+    re_port: 8612
+    pfe_port: 8622
+    link:
+      - name: "vmx2_vmx3"
+        intf: "ge-0.0.0-vmx3"
+        peerintf: "ge-0.0.1-vmx2"
+      - name: "vmx3_vsrx"
+        intf: "ge-0.0.1-vmx3"
+        peerintf: "ge-0.0.0-vsrx"
+  -
+    name: "vsrx"
+    imagePath: "/opt/aprabh/vsrx_images/"
+    reImage: "junos-vsrx3-x86-64-22.1R1.1.qcow2"
+    pfeImage: ""
+    metadataImage: ""
+    vhddImage: ""
+    re_memory: 4096
+    pfe_memory: 
+    vnfType: "vsrx"
+    re_cores: 4
+    pfe_cores: 
+    re_vcpu: 4
+    pfe_vcpu: 
+    re_port: 8613
+    pfe_port: 
+    link:
+      - name: "vmx3_vsrx"
+        intf: "ge-0.0.0-vsrx"
+        peerintf: "ge-0.0.1-vmx3"
+      - name: "vsrx_vsrx2"
+        intf: "ge-0.0.1-vsrx"
+        peerintf: "ge-0.0.0-vsrx2"
+  -
+    name: "vsrx2"
+    imagePath: "/opt/aprabh/vsrx_images/"
+    reImage: "junos-vsrx3-x86-64-22.1R1.1.qcow2"
+    pfeImage: ""
+    metadataImage: ""
+    vhddImage: ""
+    re_memory: 4096
+    pfe_memory: 
+    vnfType: "vsrx"
+    re_cores: 4
+    pfe_cores: 
+    re_vcpu: 4
+    pfe_vcpu: 
+    re_port: 8614
+    pfe_port: 
+    link:
+      - name: "vsrx_vsrx2"
+        intf: "ge-0.0.0-vsrx2"
+        peerintf: "ge-0.0.1-vsrx"

@@ -1,0 +1,43 @@
+
+set version 22.1R1.1
+set system host-name vmx1
+set system root-authentication encrypted-password "$6$0JCuSWOX$5CnKToocRlgljjZWASi4TQCKZlrD59ef5.zxh0f.ZCcaeVHgTeDqrYmzzukhRfQi7hqfGKAXTosc9mjGRbu8x0"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 family inet address 10.1.1.0/31
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces fxp0 unit 0 family inet address 192.167.1.1/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM631903D56A
+set interfaces lo0 unit 1 family inet address 1.10.1.1/32
+set policy-options policy-statement LEAK_INET_INET3 term 10 from route-filter 10.1.1.1/32 exact
+set policy-options policy-statement LEAK_INET_INET3 term 10 from route-filter 10.1.1.0/30 orlonger
+set policy-options policy-statement LEAK_INET_INET3 term 10 then accept
+set policy-options policy-statement LEAK_INET_INET3 term 20 then reject
+set routing-instances VPN-1 instance-type vrf
+set routing-instances VPN-1 interface lo0.1
+set routing-instances VPN-1 route-distinguisher 100:100
+set routing-instances VPN-1 vrf-target target:100:100
+set routing-instances VPN-1 vrf-table-label
+set routing-options interface-routes rib-group inet LEAK_INET_INET3
+set routing-options autonomous-system 65500
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INET_INET3 import-policy LEAK_INET_INET3
+set protocols router-advertisement interface fxp0.0
+set protocols bgp group MP-IBGP type internal
+set protocols bgp group MP-IBGP family inet unicast
+set protocols bgp group MP-IBGP family inet-vpn unicast
+set protocols bgp group MP-IBGP neighbor 10.1.1.1 local-address 10.1.1.0
+set protocols mpls interface ge-0/0/0.0

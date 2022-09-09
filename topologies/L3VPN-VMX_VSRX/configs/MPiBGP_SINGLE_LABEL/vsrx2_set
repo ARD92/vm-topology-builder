@@ -1,0 +1,37 @@
+
+set version 22.1R1.1
+set system host-name vsrx2
+set system root-authentication encrypted-password "$6$CoUXxs3J$QxhcMNY7uEpFDVqw0Mlyufh4e8yAOCLBjlkKgK3LyXFJq3bIPRaNHCuJwglPz32IQ4RrIQA3yKd6XwTkS5j0I."
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services web-management http interface fxp0.0
+set system services web-management https system-generated-certificate
+set system services web-management https interface fxp0.0
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any any
+set system syslog file messages authorization info
+set system license autoupdate url https://ae1.juniper.net/junos/key_retrieval
+set security screen ids-option untrust-screen icmp ping-death
+set security screen ids-option untrust-screen ip source-route-option
+set security screen ids-option untrust-screen ip tear-drop
+set security screen ids-option untrust-screen tcp syn-flood alarm-threshold 1024
+set security screen ids-option untrust-screen tcp syn-flood attack-threshold 200
+set security screen ids-option untrust-screen tcp syn-flood source-threshold 1024
+set security screen ids-option untrust-screen tcp syn-flood destination-threshold 2048
+set security screen ids-option untrust-screen tcp syn-flood queue-size 2000
+set security screen ids-option untrust-screen tcp syn-flood timeout 20
+set security screen ids-option untrust-screen tcp land
+set security policies from-zone trust to-zone trust policy default-permit match source-address any
+set security policies from-zone trust to-zone trust policy default-permit match destination-address any
+set security policies from-zone trust to-zone trust policy default-permit match application any
+set security policies from-zone trust to-zone trust policy default-permit then permit
+set security policies from-zone trust to-zone untrust policy default-permit match source-address any
+set security policies from-zone trust to-zone untrust policy default-permit match destination-address any
+set security policies from-zone trust to-zone untrust policy default-permit match application any
+set security policies from-zone trust to-zone untrust policy default-permit then permit
+set security policies pre-id-default-policy then log session-close
+set security zones security-zone trust tcp-rst
+set security zones security-zone untrust screen untrust-screen
+set interfaces fxp0 unit 0 family inet address 192.167.1.5/24

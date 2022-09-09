@@ -1,0 +1,1 @@
+This topology brings up an L3VPN connection between a vMX and vSRX (flow mode) . The ASBRs perform option B. Once traffic lands on respective VRFs on vSRX. The traffic can take the IPSEC tunnel to a remote site.

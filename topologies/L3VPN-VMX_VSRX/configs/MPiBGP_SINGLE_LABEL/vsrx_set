@@ -1,0 +1,61 @@
+
+set version 22.1R1.1
+set system host-name vsrx
+set system root-authentication encrypted-password "$6$0m6YeRa.$1gEBGnhuhZkZX9PDDb3JHzzW/9nBsOAWBwJGAs9ulDEtDv9UmbwGFhqbgUwEihkmHTwf5f.af6JCqPYz.ungx0"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services web-management http interface fxp0.0
+set system services web-management https system-generated-certificate
+set system services web-management https interface fxp0.0
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any any
+set system syslog file messages authorization info
+set system license autoupdate url https://ae1.juniper.net/junos/key_retrieval
+set security forwarding-options family mpls mode flow-based
+set security screen ids-option untrust-screen icmp ping-death
+set security screen ids-option untrust-screen ip source-route-option
+set security screen ids-option untrust-screen ip tear-drop
+set security screen ids-option untrust-screen tcp syn-flood alarm-threshold 1024
+set security screen ids-option untrust-screen tcp syn-flood attack-threshold 200
+set security screen ids-option untrust-screen tcp syn-flood source-threshold 1024
+set security screen ids-option untrust-screen tcp syn-flood destination-threshold 2048
+set security screen ids-option untrust-screen tcp syn-flood queue-size 2000
+set security screen ids-option untrust-screen tcp syn-flood timeout 20
+set security screen ids-option untrust-screen tcp land
+set security policies from-zone trust to-zone trust policy default-permit match source-address any
+set security policies from-zone trust to-zone trust policy default-permit match destination-address any
+set security policies from-zone trust to-zone trust policy default-permit match application any
+set security policies from-zone trust to-zone trust policy default-permit then permit
+set security policies from-zone trust to-zone untrust policy default-permit match source-address any
+set security policies from-zone trust to-zone untrust policy default-permit match destination-address any
+set security policies from-zone trust to-zone untrust policy default-permit match application any
+set security policies from-zone trust to-zone untrust policy default-permit then permit
+set security policies pre-id-default-policy then log session-close
+set security zones security-zone trust tcp-rst
+set security zones security-zone trust host-inbound-traffic system-services all
+set security zones security-zone trust host-inbound-traffic protocols all
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust screen untrust-screen
+set interfaces ge-0/0/0 unit 0 family inet address 10.1.1.5/31
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces fxp0 unit 0 family inet address 192.167.1.4/24
+set interfaces lo0 unit 1 family inet address 4.10.1.1/32
+set policy-options policy-statement LEAK_INET_INET3 term 10 from route-filter 10.1.1.4/30 orlonger
+set policy-options policy-statement LEAK_INET_INET3 term 10 then accept
+set policy-options policy-statement LEAK_INET_INET3 term 20 then reject
+set routing-instances VPN-1 instance-type vrf
+set routing-instances VPN-1 interface lo0.1
+set routing-instances VPN-1 route-distinguisher 100:101
+set routing-instances VPN-1 vrf-target target:100:100
+set routing-instances VPN-1 vrf-table-label
+set protocols bgp group MP-IBGP type internal
+set protocols bgp group MP-IBGP family inet unicast
+set protocols bgp group MP-IBGP family inet-vpn unicast
+set protocols bgp group MP-IBGP neighbor 10.1.1.4 local-address 10.1.1.5
+set routing-options interface-routes rib-group inet LEAK_INET_INET3
+set routing-options autonomous-system 65501
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INET_INET3 import-policy LEAK_INET_INET3

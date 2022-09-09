@@ -1,0 +1,11 @@
+---
+  hosts:
+    - 10.102.144.91
+    - 10.102.144.92
+    - 10.102.144.93
+  opcommand:
+    - show bgp summary | no-more
+    - show route table bgp.l2vpn.0 | no-more
+    - show vpls connections | no-more
+    - show route | no-more
+    - show vpls mac-table | no-more

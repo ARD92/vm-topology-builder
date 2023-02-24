@@ -1,0 +1,300 @@
+
+## Last commit: 2023-02-22 22:35:46 UTC by root
+version 21.3R1.6;
+system {
+    host-name core1;
+    root-authentication {
+        encrypted-password "$6$A7a4Kj0B$OZeH9lzuh09nUYgCqO/OPYp9X/QDyQIH2X82trwWSYczwDZAakZbsKVYds3iENN3NIWSmxlHySNS1Q4Dl2Ups0"; ## SECRET-DATA
+    }
+    scripts {
+        language python; ## Warning: 'python' is deprecated
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+        }
+    }
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 192.168.1.4/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/1 {
+        flexible-vlan-tagging;
+        native-vlan-id 1;
+        unit 0 {
+            vlan-id 1;
+            family inet {
+                address 192.168.1.1/31;
+            }
+            family iso;
+            family mpls;
+        }
+        unit 1 {
+            vlan-id 10;
+            family inet {
+                address 192.169.1.1/31;
+            }
+        }
+        unit 2 {
+            vlan-id 20;
+            family inet {
+                address 192.170.1.1/31;
+            }
+            family inet6 {
+                address ::ffff:192.170.1.1/127;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 192.168.1.6/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 192.167.1.1/24;
+            }
+            family inet6 {
+                dhcpv6-client {
+                    client-type stateful;
+                    client-ia-type ia-na;
+                    client-identifier duid-type duid-ll;
+                    vendor-id Juniper:vmx:VM63D151DCE6;
+                }
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.1.1.2/32;
+            }
+            family iso {
+                address 49.0001.0002.0002.1000;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement LEAK_INTF_INET6_INET63 {
+        term 10 {
+            from {
+                route-filter ::ffff:10.1.1.2/128 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement LEAK_INTF_INET_INET3 {
+        term 10 {
+            from {
+                route-filter 10.1.1.2/32 exact;
+            }
+            then accept;
+        }
+        term 30 {
+            then reject;
+        }
+    }
+    policy-statement LEAK_UNDERLAY_TO_ISIS {
+        term 10 {
+            from {
+                route-filter 192.169.1.0/31 orlonger;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement NH-SELF {
+        term 10 {
+            then {
+                next-hop self;
+            }
+        }
+    }
+    policy-statement TE {
+        term 10 {
+            from family traffic-engineering;
+            then accept;
+        }
+        term 20 {
+            from protocol isis;
+            then accept;
+        }
+    }
+}
+routing-options {
+    router-id 10.1.1.2;
+    autonomous-system 65535;
+    inactive: bmp {
+        connection-mode active;
+        statistics-timeout 60;
+        station routing-bot {
+            initiation-message router-id:10.1.1.2,autonomous-system:65535;
+            local-address 192.167.1.1;
+            route-monitoring {
+                loc-rib;
+                pre-policy;
+                rib-out post-policy;
+            }
+            station-address 192.168.122.10;
+            station-port 17002;
+        }
+    }
+    static {
+        route 192.168.122.0/28 next-hop 192.167.1.254;
+        route 199.1.1.0/30 {
+            next-hop 192.167.1.254;
+            no-readvertise;
+        }
+    }
+    rib-groups {
+        LEAK_INTF_INET_INET3 {
+            import-rib [ inet.0 inet.3 ];
+            import-policy LEAK_INTF_INET_INET3;
+        }
+        LEAK_INTF_INET6_INET63 {
+            import-rib [ inet6.0 inet6.3 ];
+            import-policy LEAK_INTF_INET6_INET63;
+        }
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    bgp {
+        group TRANSPORT_RR {
+            type internal;
+            local-address 10.1.1.2;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+                unicast;
+            }
+            family inet6 {
+                labeled-unicast {
+                    rib {
+                        inet6.3;
+                    }
+                }
+            }
+            export NH-SELF;
+            cluster 10.1.1.2;
+            neighbor 10.1.1.3;
+            neighbor 10.1.1.4;
+            neighbor 10.1.1.5;
+        }
+        group eBGP-to-adi {
+            type external;
+            local-address 192.169.1.1;
+            family inet {
+                unicast;
+            }
+            neighbor 192.169.1.0 {
+                peer-as 65532;
+            }
+        }
+        group eBGP-to-adi-lu {
+            type external;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            family inet6 {
+                labeled-unicast {
+                    rib {
+                        inet6.3;
+                    }
+                }
+            }
+            neighbor 192.170.1.0 {
+                local-address 192.170.1.1;
+                peer-as 65532;
+            }
+        }
+        inactive: group routing-bot {
+            type internal;
+            family traffic-engineering {
+                unicast;
+            }
+            export TE;
+            local-as 9;
+            neighbor 192.168.122.10;
+        }
+    }
+    isis {
+        interface ge-0/0/0.0;
+        interface ge-0/0/2.0;
+        interface lo0.0 {
+            passive;
+        }
+        level 1 disable;
+        traffic-engineering l3-unicast-topology;
+        inactive: export LEAK_UNDERLAY_TO_ISIS;
+    }
+    ldp {
+        interface ge-0/0/0.0;
+        interface ge-0/0/2.0;
+        interface lo0.0;
+    }
+    mpls {
+        traffic-engineering {
+            bgp-igp-both-ribs;
+            database {
+                import {
+                    l3-unicast-topology {
+                        bgp-link-state;
+                    }
+                    policy TE;
+                }
+            }
+        }
+        interface all;
+    }
+}

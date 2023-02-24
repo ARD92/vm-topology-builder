@@ -1,0 +1,196 @@
+
+set version 21.3R1.6
+set system host-name adi
+set system root-authentication encrypted-password "$6$pWZ3D2t0$.1Mbe70dp7YLfUKrMeCzh4XBoy503XqRAwq5DbqvtHfIVVvFB/wRBTHVYDOe1e/ZRb7tkwqtpTcz3ChtijM4e/"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set logical-systems SANE-CUST-1 interfaces lt-0/0/10 unit 0 encapsulation ethernet
+set logical-systems SANE-CUST-1 interfaces lt-0/0/10 unit 0 peer-unit 1
+set logical-systems SANE-CUST-1 interfaces lt-0/0/10 unit 0 family inet address 191.1.1.0/31
+set logical-systems SANE-CUST-1 interfaces lo0 unit 99 family inet address 98.0.0.1/32
+set logical-systems SANE-CUST-1 interfaces lo0 unit 99 family inet address 98.0.0.2/32
+set logical-systems SANE-CUST-1 interfaces lo0 unit 99 family inet address 98.0.0.3/32
+set logical-systems SANE-CUST-1 interfaces lo0 unit 99 family inet address 98.0.0.4/32
+set logical-systems SANE-CUST-1 interfaces lo0 unit 99 family inet address 98.0.0.5/32
+set logical-systems SANE-CUST-1 protocols bgp group PE-CE type external
+set logical-systems SANE-CUST-1 protocols bgp group PE-CE family inet unicast
+set logical-systems SANE-CUST-1 protocols bgp group PE-CE export ADVERTISE_CUST_ROUTES
+set logical-systems SANE-CUST-1 protocols bgp group PE-CE peer-as 65433
+set logical-systems SANE-CUST-1 protocols bgp group PE-CE local-as 65432
+set logical-systems SANE-CUST-1 protocols bgp group PE-CE neighbor 191.1.1.1
+set logical-systems SANE-CUST-1 policy-options policy-statement ADVERTISE_CUST_ROUTES term 10 from route-filter 98.0.0.0/24 orlonger
+set logical-systems SANE-CUST-1 policy-options policy-statement ADVERTISE_CUST_ROUTES term 10 then accept
+set logical-systems SANE-CUST-1 policy-options policy-statement ADVERTISE_CUST_ROUTES term 20 then reject
+set chassis fpc 0 pic 0 tunnel-services bandwidth 1g
+set chassis fpc 0 pic 0 inline-services bandwidth 1g
+set interfaces ge-0/0/0 flexible-vlan-tagging
+set interfaces ge-0/0/0 native-vlan-id 1
+set interfaces ge-0/0/0 unit 0 vlan-id 1
+set interfaces ge-0/0/0 unit 0 family inet address 192.168.1.0/31
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces ge-0/0/0 unit 1 vlan-id 10
+set interfaces ge-0/0/0 unit 1 family inet address 192.169.1.0/31
+set interfaces ge-0/0/0 unit 2 vlan-id 20
+set interfaces ge-0/0/0 unit 2 family inet address 192.170.1.0/31
+set interfaces ge-0/0/0 unit 2 family mpls
+set interfaces ge-0/0/0 unit 999 vlan-id 999
+set interfaces ge-0/0/0 unit 999 family inet address 190.1.1.1/30
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 native-vlan-id 1
+set interfaces ge-0/0/1 unit 0 vlan-id 1
+set interfaces ge-0/0/1 unit 0 family inet address 192.168.1.2/31
+set interfaces ge-0/0/1 unit 1 vlan-id 10
+set interfaces ge-0/0/1 unit 1 family inet address 192.169.1.2/31
+set interfaces ge-0/0/1 unit 2 vlan-id 20
+set interfaces ge-0/0/1 unit 2 family inet address 192.170.1.2/31
+set interfaces ge-0/0/1 unit 2 family mpls
+set interfaces lt-0/0/10 unit 1 encapsulation ethernet
+set interfaces lt-0/0/10 unit 1 peer-unit 0
+set interfaces lt-0/0/10 unit 1 family inet address 191.1.1.1/31
+set interfaces fxp0 unit 0 family inet address 192.167.1.5/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM63D151FDF5
+set interfaces lo0 unit 0 family inet address 10.0.0.0/32
+set interfaces lo0 unit 0 family inet address 10.1.1.1/32
+set interfaces lo0 unit 0 family inet address 10.10.1.1/32
+set interfaces lo0 unit 0 family inet6 address ::ffff:10.10.1.1/128
+set interfaces lo0 unit 1 description "dummy ip for IP resolution on SANE"
+set interfaces lo0 unit 1 family inet address 98.98.98.98/32
+set interfaces lo0 unit 10 family inet6 address ::ffff:101.101.101.101/128
+set interfaces lo0 unit 10 family inet6 address 2001::10/128
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term 10 from rib inet.0
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term 10 from route-filter 98.0.0.0/24 orlonger
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term 10 then accept
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term REJECT-INET from rib inet.0
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term REJECT-INET then reject
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term 20 then next-hop 10.10.1.1
+set policy-options policy-statement ADVERTISE_SANE_CUST_TO_DCU term 20 then accept
+set policy-options policy-statement CHANGE_NH term 10 then next-hop 10.10.1.1
+set policy-options policy-statement CHANGE_NH term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 10 from route-filter ::ffff:10.10.1.1/128 exact
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 from route-filter 10.10.1.1/32 exact
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 20 then reject
+set policy-options policy-statement LEAK_SANE_CUSTOMER_TO_INET0 term 10 from route-filter 98.0.0.0/24 orlonger
+set policy-options policy-statement LEAK_SANE_CUSTOMER_TO_INET0 term 10 then accept
+set policy-options policy-statement LEAK_SANE_CUSTOMER_TO_INET0 term 20 then reject
+set policy-options policy-statement Lo0_ADV term 10 from route-filter 10.1.1.1/32 exact
+set policy-options policy-statement Lo0_ADV term 10 then accept
+set policy-options policy-statement Lo0_ADV term 20 then reject
+set policy-options policy-statement Lo10_ADV term 10 from route-filter 10.10.1.1/32 exact
+set policy-options policy-statement Lo10_ADV term 10 then accept
+set policy-options policy-statement Lo10_ADV term 20 from route-filter ::ffff:10.10.1.1/128 exact
+set policy-options policy-statement Lo10_ADV term 20 then accept
+set policy-options policy-statement SANE-CUSTOMER term 10 from route-filter 98.0.0.0/24 orlonger
+set policy-options policy-statement SANE-CUSTOMER term 10 then community add SANE-CUSTOMER
+set policy-options policy-statement SANE-CUSTOMER term 10 then community add SPECIAL_CV_SANE
+set policy-options policy-statement SANE-CUSTOMER term 10 then accept
+set policy-options policy-statement SANE-CUSTOMER term PE-CE-LINKS from protocol direct
+set policy-options policy-statement SANE-CUSTOMER term PE-CE-LINKS from protocol local
+set policy-options policy-statement SANE-CUSTOMER term PE-CE-LINKS then community add SANE-CUSTOMER
+set policy-options policy-statement SANE-CUSTOMER term PE-CE-LINKS then accept
+set policy-options policy-statement SANE-CUSTOMER term 20 then reject
+set policy-options policy-statement SANE-DEFAULT term 10 from community SANE-DEFAULT
+set policy-options policy-statement SANE-DEFAULT term 10 then accept
+set policy-options policy-statement SANE-DEFAULT term 20 then reject
+set policy-options community SANE-CUSTOMER members target:999:998
+set policy-options community SANE-DEFAULT members target:999:999
+set policy-options community SPECIAL_CV_SANE members 9191:9191
+set routing-instances SANE-VRF instance-type vrf
+set routing-instances SANE-VRF protocols bgp group PE-CE type external
+set routing-instances SANE-VRF protocols bgp group PE-CE family inet unicast
+set routing-instances SANE-VRF protocols bgp group PE-CE peer-as 65432
+set routing-instances SANE-VRF protocols bgp group PE-CE local-as 65433
+set routing-instances SANE-VRF protocols bgp group PE-CE neighbor 191.1.1.0
+set routing-instances SANE-VRF interface ge-0/0/0.999
+set routing-instances SANE-VRF interface lt-0/0/10.1
+set routing-instances SANE-VRF interface lo0.1
+set routing-instances SANE-VRF route-distinguisher 999:900
+set routing-instances SANE-VRF vrf-import SANE-DEFAULT
+set routing-instances SANE-VRF vrf-export SANE-CUSTOMER
+set routing-instances SANE-VRF vrf-table-label
+set routing-instances TEST-6vPE instance-type vrf
+set routing-instances TEST-6vPE interface lo0.10
+set routing-instances TEST-6vPE route-distinguisher 1111:1111
+set routing-instances TEST-6vPE vrf-target target:1111:1111
+set routing-instances TEST-6vPE vrf-table-label
+set routing-options interface-routes rib-group inet LEAK_INTF_INET_INET3
+set routing-options interface-routes rib-group inet6 LEAK_INTF_INET6_INET63
+set routing-options router-id 10.1.1.1
+set routing-options autonomous-system 65532
+set routing-options bmp connection-mode active
+set routing-options bmp statistics-timeout 60
+set routing-options bmp station routing-bot initiation-message router-id:10.1.1.1,autonomous-system:65532
+set routing-options bmp station routing-bot local-address 192.167.1.5
+set routing-options bmp station routing-bot route-monitoring loc-rib
+set routing-options bmp station routing-bot route-monitoring pre-policy
+set routing-options bmp station routing-bot route-monitoring rib-out post-policy
+set routing-options bmp station routing-bot station-address 192.168.122.10
+set routing-options bmp station routing-bot station-port 17002
+deactivate routing-options bmp
+set routing-options static route 192.168.122.0/28 next-hop 192.167.1.254
+set routing-options static route 199.1.1.0/30 next-hop 192.167.1.254
+set routing-options static route 199.1.1.0/30 no-readvertise
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-policy LEAK_INTF_INET_INET3
+set routing-options rib-groups LEAK_INTF_INET6_INET63 import-rib inet6.0
+set routing-options rib-groups LEAK_INTF_INET6_INET63 import-rib inet6.3
+set routing-options rib-groups LEAK_INTF_INET6_INET63 import-policy LEAK_INTF_INET6_INET63
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet.3
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet6.3
+set protocols router-advertisement interface fxp0.0
+set protocols bgp group eBGP-to-core1 type external
+set protocols bgp group eBGP-to-core1 family inet unicast
+set protocols bgp group eBGP-to-core1 export Lo0_ADV
+set protocols bgp group eBGP-to-core1 neighbor 192.169.1.1 local-address 192.169.1.0
+set protocols bgp group eBGP-to-core1 neighbor 192.169.1.1 peer-as 65535
+set protocols bgp group eBGP-to-core1 neighbor 192.169.1.1 local-as 65532
+set protocols bgp group eBGP-to-core1-lu type external
+set protocols bgp group eBGP-to-core1-lu family inet labeled-unicast rib-group LEAK_INET3_INET63
+set protocols bgp group eBGP-to-core1-lu family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-core1-lu family inet6 labeled-unicast rib inet6.3
+set protocols bgp group eBGP-to-core1-lu family inet6 labeled-unicast explicit-null
+deactivate protocols bgp group eBGP-to-core1-lu family inet6
+set protocols bgp group eBGP-to-core1-lu export Lo10_ADV
+set protocols bgp group eBGP-to-core1-lu peer-as 65535
+set protocols bgp group eBGP-to-core1-lu local-as 65532
+set protocols bgp group eBGP-to-core1-lu neighbor 192.170.1.1 local-address 192.170.1.0
+set protocols bgp group eBGP-to-core type external
+set protocols bgp group eBGP-to-core family inet unicast
+set protocols bgp group eBGP-to-core export Lo0_ADV
+set protocols bgp group eBGP-to-core neighbor 192.169.1.3 local-address 192.169.1.2
+set protocols bgp group eBGP-to-core neighbor 192.169.1.3 peer-as 65535
+set protocols bgp group eBGP-to-core neighbor 192.169.1.3 local-as 65532
+set protocols bgp group eBGP-to-core2-lu type external
+set protocols bgp group eBGP-to-core2-lu family inet labeled-unicast rib-group LEAK_INET3_INET63
+set protocols bgp group eBGP-to-core2-lu family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-core2-lu family inet6 labeled-unicast rib inet6.3
+deactivate protocols bgp group eBGP-to-core2-lu family inet6
+set protocols bgp group eBGP-to-core2-lu export Lo10_ADV
+set protocols bgp group eBGP-to-core2-lu neighbor 192.170.1.3 local-address 192.170.1.2
+set protocols bgp group eBGP-to-core2-lu neighbor 192.170.1.3 peer-as 65535
+set protocols bgp group eBGP-to-core2-lu neighbor 192.170.1.3 local-as 65532
+set protocols bgp group L3VPN type internal
+set protocols bgp group L3VPN family inet unicast
+set protocols bgp group L3VPN family inet-vpn unicast
+set protocols bgp group L3VPN family inet6-vpn unicast
+set protocols bgp group L3VPN export CHANGE_NH
+set protocols bgp group L3VPN local-as 65533
+set protocols bgp group L3VPN neighbor 10.1.1.6 local-address 10.1.1.1
+set protocols bgp group L3VPN neighbor 10.1.1.6 export ADVERTISE_SANE_CUST_TO_DCU
+set protocols bgp group L3VPN vpn-apply-export
+set protocols mpls ipv6-tunneling
+set protocols mpls interface all

@@ -1,0 +1,115 @@
+
+set version 21.3R1.6
+set system host-name core1
+set system root-authentication encrypted-password "$6$A7a4Kj0B$OZeH9lzuh09nUYgCqO/OPYp9X/QDyQIH2X82trwWSYczwDZAakZbsKVYds3iENN3NIWSmxlHySNS1Q4Dl2Ups0"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set interfaces ge-0/0/0 unit 0 family inet address 192.168.1.4/31
+set interfaces ge-0/0/0 unit 0 family iso
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 native-vlan-id 1
+set interfaces ge-0/0/1 unit 0 vlan-id 1
+set interfaces ge-0/0/1 unit 0 family inet address 192.168.1.1/31
+set interfaces ge-0/0/1 unit 0 family iso
+set interfaces ge-0/0/1 unit 0 family mpls
+set interfaces ge-0/0/1 unit 1 vlan-id 10
+set interfaces ge-0/0/1 unit 1 family inet address 192.169.1.1/31
+set interfaces ge-0/0/1 unit 2 vlan-id 20
+set interfaces ge-0/0/1 unit 2 family inet address 192.170.1.1/31
+set interfaces ge-0/0/1 unit 2 family inet6 address ::ffff:192.170.1.1/127
+set interfaces ge-0/0/1 unit 2 family mpls
+set interfaces ge-0/0/2 unit 0 family inet address 192.168.1.6/31
+set interfaces ge-0/0/2 unit 0 family iso
+set interfaces ge-0/0/2 unit 0 family mpls
+set interfaces fxp0 unit 0 family inet address 192.167.1.1/24
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-type stateful
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-ia-type ia-na
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client client-identifier duid-type duid-ll
+set interfaces fxp0 unit 0 family inet6 dhcpv6-client vendor-id Juniper:vmx:VM63D151DCE6
+set interfaces lo0 unit 0 family inet address 10.1.1.2/32
+set interfaces lo0 unit 0 family iso address 49.0001.0002.0002.1000
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 10 from route-filter ::ffff:10.1.1.2/128 exact
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 20 then reject
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 from route-filter 10.1.1.2/32 exact
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 30 then reject
+set policy-options policy-statement LEAK_UNDERLAY_TO_ISIS term 10 from route-filter 192.169.1.0/31 orlonger
+set policy-options policy-statement LEAK_UNDERLAY_TO_ISIS term 10 then accept
+set policy-options policy-statement LEAK_UNDERLAY_TO_ISIS term 20 then reject
+set policy-options policy-statement NH-SELF term 10 then next-hop self
+set policy-options policy-statement TE term 10 from family traffic-engineering
+set policy-options policy-statement TE term 10 then accept
+set policy-options policy-statement TE term 20 from protocol isis
+set policy-options policy-statement TE term 20 then accept
+set routing-options router-id 10.1.1.2
+set routing-options autonomous-system 65535
+set routing-options bmp connection-mode active
+set routing-options bmp statistics-timeout 60
+set routing-options bmp station routing-bot initiation-message router-id:10.1.1.2,autonomous-system:65535
+set routing-options bmp station routing-bot local-address 192.167.1.1
+set routing-options bmp station routing-bot route-monitoring loc-rib
+set routing-options bmp station routing-bot route-monitoring pre-policy
+set routing-options bmp station routing-bot route-monitoring rib-out post-policy
+set routing-options bmp station routing-bot station-address 192.168.122.10
+set routing-options bmp station routing-bot station-port 17002
+deactivate routing-options bmp
+set routing-options static route 192.168.122.0/28 next-hop 192.167.1.254
+set routing-options static route 199.1.1.0/30 next-hop 192.167.1.254
+set routing-options static route 199.1.1.0/30 no-readvertise
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-policy LEAK_INTF_INET_INET3
+set routing-options rib-groups LEAK_INTF_INET6_INET63 import-rib inet6.0
+set routing-options rib-groups LEAK_INTF_INET6_INET63 import-rib inet6.3
+set routing-options rib-groups LEAK_INTF_INET6_INET63 import-policy LEAK_INTF_INET6_INET63
+set protocols router-advertisement interface fxp0.0
+set protocols bgp group TRANSPORT_RR type internal
+set protocols bgp group TRANSPORT_RR local-address 10.1.1.2
+set protocols bgp group TRANSPORT_RR family inet labeled-unicast rib inet.3
+set protocols bgp group TRANSPORT_RR family inet unicast
+set protocols bgp group TRANSPORT_RR family inet6 labeled-unicast rib inet6.3
+set protocols bgp group TRANSPORT_RR export NH-SELF
+set protocols bgp group TRANSPORT_RR cluster 10.1.1.2
+set protocols bgp group TRANSPORT_RR neighbor 10.1.1.3
+set protocols bgp group TRANSPORT_RR neighbor 10.1.1.4
+set protocols bgp group TRANSPORT_RR neighbor 10.1.1.5
+set protocols bgp group eBGP-to-adi type external
+set protocols bgp group eBGP-to-adi local-address 192.169.1.1
+set protocols bgp group eBGP-to-adi family inet unicast
+set protocols bgp group eBGP-to-adi neighbor 192.169.1.0 peer-as 65532
+set protocols bgp group eBGP-to-adi-lu type external
+set protocols bgp group eBGP-to-adi-lu family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-adi-lu family inet6 labeled-unicast rib inet6.3
+set protocols bgp group eBGP-to-adi-lu neighbor 192.170.1.0 local-address 192.170.1.1
+set protocols bgp group eBGP-to-adi-lu neighbor 192.170.1.0 peer-as 65532
+set protocols bgp group routing-bot type internal
+set protocols bgp group routing-bot family traffic-engineering unicast
+set protocols bgp group routing-bot export TE
+set protocols bgp group routing-bot local-as 9
+set protocols bgp group routing-bot neighbor 192.168.122.10
+deactivate protocols bgp group routing-bot
+set protocols isis interface ge-0/0/0.0
+set protocols isis interface ge-0/0/2.0
+set protocols isis interface lo0.0 passive
+set protocols isis level 1 disable
+set protocols isis traffic-engineering l3-unicast-topology
+set protocols isis export LEAK_UNDERLAY_TO_ISIS
+deactivate protocols isis export
+set protocols ldp interface ge-0/0/0.0
+set protocols ldp interface ge-0/0/2.0
+set protocols ldp interface lo0.0
+set protocols mpls traffic-engineering bgp-igp-both-ribs
+set protocols mpls traffic-engineering database import l3-unicast-topology bgp-link-state
+set protocols mpls traffic-engineering database import policy TE
+set protocols mpls interface all

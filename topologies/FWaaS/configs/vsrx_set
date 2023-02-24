@@ -1,0 +1,82 @@
+
+set version 20.4R1.12
+set system host-name vsrx
+set system root-authentication encrypted-password "$6$tQ7glN9L$J8MbytDPE0F6TViAuYxxTmjwNWPhTeUUZIOblc6PhsTeyh53Dfznj1406tX3g3SdLaPqaD.YBE.3ZwFqbONYh/"
+set system scripts language python
+set system services ssh root-login allow
+set system services telnet
+set system services netconf ssh
+set system services web-management http interface fxp0.0
+set system services web-management https system-generated-certificate
+set system services web-management https interface fxp0.0
+set system syslog file messages any any
+set system syslog file messages authorization info
+set system syslog file interactive-commands interactive-commands any
+set system license autoupdate url https://ae1.juniper.net/junos/key_retrieval
+set security log mode stream
+set security log source-address 192.171.1.1
+set security log stream JETAPP format sd-syslog
+set security log stream JETAPP host 192.171.1.2
+set security log stream JETAPP host port 514
+set security log stream JETAPP transport protocol udp
+set security log file name session-logger
+set security log file size 10
+set security log file files 2
+set security flow tcp-session rst-invalidate-session
+set security flow tcp-session fin-invalidate-session
+set security screen ids-option untrust-screen icmp ping-death
+set security screen ids-option untrust-screen ip source-route-option
+set security screen ids-option untrust-screen ip tear-drop
+set security screen ids-option untrust-screen tcp syn-flood alarm-threshold 1024
+set security screen ids-option untrust-screen tcp syn-flood attack-threshold 200
+set security screen ids-option untrust-screen tcp syn-flood source-threshold 1024
+set security screen ids-option untrust-screen tcp syn-flood destination-threshold 2048
+set security screen ids-option untrust-screen tcp syn-flood queue-size 2000
+set security screen ids-option untrust-screen tcp syn-flood timeout 20
+set security screen ids-option untrust-screen tcp land
+set security policies from-zone trust to-zone trust policy default-permit match source-address any
+set security policies from-zone trust to-zone trust policy default-permit match destination-address any
+set security policies from-zone trust to-zone trust policy default-permit match application any
+set security policies from-zone trust to-zone trust policy default-permit then permit
+set security policies from-zone trust to-zone untrust policy default-permit match source-address any
+set security policies from-zone trust to-zone untrust policy default-permit match destination-address any
+set security policies from-zone trust to-zone untrust policy default-permit match application any
+set security policies from-zone trust to-zone untrust policy default-permit then permit
+set security policies from-zone trust to-zone untrust policy default-permit then log session-init
+set security policies from-zone trust to-zone untrust policy default-permit then log session-close
+set security policies from-zone untrust to-zone trust policy default-permit match source-address any
+set security policies from-zone untrust to-zone trust policy default-permit match destination-address any
+set security policies from-zone untrust to-zone trust policy default-permit match application any
+set security policies from-zone untrust to-zone trust policy default-permit then permit
+set security policies default-policy permit-all
+set security policies pre-id-default-policy then log session-close
+set security zones security-zone trust tcp-rst
+set security zones security-zone trust host-inbound-traffic system-services all
+set security zones security-zone trust host-inbound-traffic protocols all
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust screen untrust-screen
+set security zones security-zone untrust host-inbound-traffic system-services all
+set security zones security-zone untrust host-inbound-traffic protocols all
+set security zones security-zone untrust interfaces ge-0/0/1.0
+set security zones security-zone untrust interfaces ge-0/0/1.1
+set interfaces ge-0/0/0 description trust
+set interfaces ge-0/0/0 unit 0 family inet address 192.168.1.19/31
+set interfaces ge-0/0/0 unit 0 family inet6 address ::ffff:192.168.1.19/128
+set interfaces ge-0/0/1 description untrust
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 unit 0 vlan-id 1
+set interfaces ge-0/0/1 unit 0 family inet address 192.168.1.21/31
+set interfaces ge-0/0/1 unit 1 description "high speed logging towards jetapp"
+set interfaces ge-0/0/1 unit 1 vlan-id 10
+set interfaces ge-0/0/1 unit 1 family inet address 192.171.1.1/30
+set interfaces fxp0 unit 0 family inet address 192.167.1.7/24
+set policy-options policy-statement LEAK_TO_INET63 term 10 from route-filter ::ffff:192.168.1.19/128 exact
+set policy-options policy-statement LEAK_TO_INET63 term 10 then accept
+set applications application TELNET protocol tcp
+set applications application TELNET inactivity-timeout 4
+set routing-options static route 0.0.0.0/0 next-hop 192.168.1.20
+set routing-options static route 98.0.0.1/32 next-hop 192.168.1.18
+set routing-options interface-routes rib-group inet6 LEAK_TO_INET63
+set routing-options rib-groups LEAK_TO_INET63 import-rib inet6.0
+set routing-options rib-groups LEAK_TO_INET63 import-rib inet6.3
+set routing-options rib-groups LEAK_TO_INET63 import-policy LEAK_TO_INET63

@@ -1,0 +1,337 @@
+
+set version 23.2I-20230127_dev_common.0.1049
+set system host-name dcu
+set system root-authentication encrypted-password "$6$AxP1Mh6G$cxB2Mpx.wjvbbWQORyw6og6wnLYBVr9FwJ4BTzQvD/k2aL1Bshf2EV/wA6oKrw8TyHpgF7jSNQPLltNYEkzls0"
+set system configuration-database ephemeral
+set system scripts language python3
+set system login user aprabh full-name "Aravind Prabhakar"
+set system login user aprabh uid 1000
+set system login user aprabh class super-user
+set system login user aprabh authentication encrypted-password "$6$WJ201uaU$oDU7y/0PGvtgqFKe2dnub3ZR5qz9v6xd5tkbcDYDxtH9YZ/oUrtbm5NmCAt5Z4em8PPM7LfRcdKtDugkUo24./"
+set system login message "*************************************************************************** \n Warning NoticeThis system is restricted solely to AT&T authorized users forlegitimate business purposesonly. The actual or attempted unauthorized access, use, or modification of this system is strictly prohibited by AT&T. Unauthorized users are subject to Company disciplinary proceedings and/or disciplinary proceedings and/orapplicable domestic and foreign laws The use of this system may be monitored and recorded for administrative and security reasons Anyone accessing this system expressly consents to such monitoring and is advised that if monitoring reveals possible evidence of criminal activity, AT&T may provide the evidence of such activity to law enforcement officials. All users must comply with AT&T company policies regarding the protection of AT&T information assets \n ************************************************************************* "
+set system services ssh root-login allow
+set system services telnet
+set system services extension-service request-response grpc clear-text address 0.0.0.0
+set system services extension-service request-response grpc clear-text port 50051
+set system services extension-service request-response grpc max-connections 8
+set system services extension-service notification port 1883
+set system services extension-service notification allow-clients address 0.0.0.0/0
+set system services extension-service traceoptions file grpc.log
+set system services extension-service traceoptions file size 10m
+set system services extension-service traceoptions flag grpc
+set system services netconf ssh
+set system services netconf traceoptions file netconf.log
+set system services netconf traceoptions file size 10m
+set system services netconf traceoptions flag all
+set system syslog archive size 75535
+set system syslog archive files 4
+set system syslog file interactive-commands interactive-commands any
+set system syslog file messages any notice
+set system syslog file messages authorization info
+set system syslog console any info
+set system syslog console interactive-commands info
+set system extensions extension-service application file route-leak.py arguments "-nhip 98.98.98.98 -comm 9191:9191"
+set system extensions extension-service application file route-leak.py daemonize
+set system extensions extension-service application file route-leak.py username root
+set system processes dhcp-service traceoptions file dhcp_logfile
+set system processes dhcp-service traceoptions file size 10m
+set system processes dhcp-service traceoptions level all
+set system processes dhcp-service traceoptions flag packet
+set chassis aggregated-devices ethernet device-count 10
+set interfaces ge-0/0/0 description "to core3"
+set interfaces ge-0/0/0 gigether-options 802.3ad ae0
+set interfaces ge-0/0/0 unit 0 family inet address 192.168.1.16/31
+deactivate interfaces ge-0/0/0 unit 0
+set interfaces ge-0/0/1 disable
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 native-vlan-id 1
+set interfaces ge-0/0/1 unit 0 vlan-id 1
+set interfaces ge-0/0/1 unit 0 family inet address 192.168.1.17/31
+set interfaces ge-0/0/1 unit 1 vlan-id 10
+set interfaces ge-0/0/1 unit 1 family inet filter input SANE_SERVICE_REVERSE
+set interfaces ge-0/0/1 unit 1 family inet address 192.169.1.17/31
+set interfaces ge-0/0/1 unit 1 family inet6 address ::ffff:192.169.1.17/126
+set interfaces ge-0/0/1 unit 2 vlan-id 20
+set interfaces ge-0/0/1 unit 2 family inet address 192.170.1.17/31
+set interfaces ge-0/0/1 unit 2 family mpls
+set interfaces ge-0/0/1 unit 3 vlan-id 30
+set interfaces ge-0/0/1 unit 3 family inet address 192.171.1.17/31
+set interfaces ge-0/0/1 unit 3 family mpls
+set interfaces ge-0/0/2 description "vsrx trust intf"
+set interfaces ge-0/0/2 unit 0 family inet address 192.168.1.18/31
+set interfaces ge-0/0/3 description "vsrx untrust intf"
+set interfaces ge-0/0/3 flexible-vlan-tagging
+set interfaces ge-0/0/3 unit 0 vlan-id 1
+set interfaces ge-0/0/3 unit 0 family inet address 192.168.1.20/31
+set interfaces ae0 flexible-vlan-tagging
+set interfaces ae0 native-vlan-id 1
+set interfaces ae0 mtu 9160
+set interfaces ae0 aggregated-ether-options bfd-liveness-detection minimum-interval 100
+set interfaces ae0 aggregated-ether-options bfd-liveness-detection multiplier 3
+set interfaces ae0 aggregated-ether-options bfd-liveness-detection neighbor 192.168.1.14
+set interfaces ae0 aggregated-ether-options bfd-liveness-detection local-address 192.168.1.15
+set interfaces ae0 aggregated-ether-options lacp hold-time up 6000
+deactivate interfaces ae0 aggregated-ether-options lacp
+deactivate interfaces ae0 aggregated-ether-options
+set interfaces ae0 unit 0 vlan-id 1
+set interfaces ae0 unit 0 family inet address 192.168.1.15/31
+set interfaces ae0 unit 1 description BGP-U
+set interfaces ae0 unit 1 vlan-id 10
+set interfaces ae0 unit 1 family inet filter input SANE_SERVICE_REVERSE
+set interfaces ae0 unit 1 family inet address 192.169.1.15/31
+set interfaces ae0 unit 1 family inet6 address ::ffff:192.169.1.15/126
+set interfaces ae0 unit 2 description BGP-LU
+set interfaces ae0 unit 2 vlan-id 20
+set interfaces ae0 unit 2 family inet address 192.170.1.15/31
+set interfaces ae0 unit 2 family inet6 address ::ffff:192.170.1.15/127
+set interfaces ae0 unit 2 family mpls
+set interfaces ae0 unit 3 description BGP-LU
+set interfaces ae0 unit 3 vlan-id 30
+set interfaces ae0 unit 3 family inet address 192.171.1.15/31
+set interfaces ae0 unit 3 family mpls
+set interfaces fxp0 unit 0 family inet address 192.167.1.6/24
+set interfaces lo0 unit 0 family inet address 10.1.1.6/32
+set interfaces lo0 unit 0 family inet address 10.10.1.6/32
+set interfaces lo0 unit 0 family inet address 10.20.1.6/32
+set interfaces lo0 unit 0 family inet6 address ::ffff:10.10.1.6/128
+set interfaces lo0 unit 10 family inet6 address ::ffff:101.101.102.102/128
+set interfaces lo0 unit 10 family inet6 address 2001::20/128
+set policy-options prefix-list BRONZE-EXCEPTION-CUSTOMER 98.0.0.2/32
+set policy-options prefix-list COMMON-BLOCK 99.99.99.99/32
+set policy-options prefix-list DEST-PREFIX-OFFLOAD
+set policy-options prefix-list NON-BRONZE-CUSTOMERS 98.0.0.1/32
+set policy-options prefix-list PL_DEFAULT_V6
+set policy-options prefix-list PL_LARGE_SUBNETS_V4
+set policy-options prefix-list PL_LEAF_CONNECTED_INFRA_V4
+set policy-options prefix-list PL_LEAF_CONNECTED_INFRA_V6
+set policy-options prefix-list PL_LEAF_LB0_V4
+set policy-options prefix-list PL_LEAF_LB0_V6
+set policy-options prefix-list PL_LEAF_LB10_V4
+set policy-options prefix-list PL_MARTIANS_V4
+set policy-options prefix-list PL_MARTIANS_V6
+set policy-options prefix-list PL_PRIVATE_V4
+set policy-options prefix-list PL_PRIVATE_V6
+set policy-options prefix-list SANE-CUSTOMER 98.0.0.1/32
+set policy-options prefix-list SOURCE-PREFIX-OFFLOAD
+set policy-options prefix-list SOURCE-PREFIX-OFFLOAD2
+set policy-options policy-statement ADV_SANE_DEFAULT term 10 from route-filter 0.0.0.0/0 exact
+set policy-options policy-statement ADV_SANE_DEFAULT term 10 then community add SANE-DEFAULT
+set policy-options policy-statement ADV_SANE_DEFAULT term 10 then accept
+set policy-options policy-statement ANALYZER term 20 then analyze
+set policy-options policy-statement ANALYZER term 20 then accept
+set policy-options policy-statement CHANGE_NH term 10 then next-hop 10.10.1.6
+set policy-options policy-statement CHANGE_NH term 10 then accept
+set policy-options policy-statement DONT_EXPORT_INET term 10 from rib inet.0
+set policy-options policy-statement DONT_EXPORT_INET term 10 then reject
+set policy-options policy-statement DONT_EXPORT_INET term 20 then next-hop 10.10.1.6
+set policy-options policy-statement DONT_EXPORT_INET term 20 then accept
+set policy-options policy-statement EXPORT_SANE_CUSTOMER term 10 from route-filter 98.0.0.1/32 exact
+set policy-options policy-statement EXPORT_SANE_CUSTOMER term 10 then accept
+set policy-options policy-statement EXPORT_SANE_CUSTOMER term 20 then reject
+set policy-options policy-statement LEAK_INET_INET3 term 10 from protocol bgp
+set policy-options policy-statement LEAK_INET_INET3 term 10 from route-filter 10.1.1.1/32 exact
+set policy-options policy-statement LEAK_INET_INET3 term 10 from route-filter 10.10.1.1/32 exact
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 10 from route-filter ::ffff:10.10.1.6/128 exact
+set policy-options policy-statement LEAK_INTF_INET6_INET63 term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 from route-filter 10.10.1.6/32 exact
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 from route-filter 10.20.1.6/32 exact
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 10 then accept
+set policy-options policy-statement LEAK_INTF_INET_INET3 term 20 then reject
+set policy-options policy-statement LEAK_SANE_CUSTOMER term 10 from route-filter 98.0.0.1/32 exact
+set policy-options policy-statement LEAK_SANE_CUSTOMER term 10 then accept
+set policy-options policy-statement LEAK_SANE_CUSTOMER term 20 then reject
+set policy-options policy-statement Lo0_ADV term 10 from protocol direct
+set policy-options policy-statement Lo0_ADV term 10 from route-filter 10.1.1.6/32 exact
+set policy-options policy-statement Lo0_ADV term 10 then accept
+set policy-options policy-statement Lo0_ADV term ADV_SANE_CUST from route-filter 98.0.0.1/32 exact
+set policy-options policy-statement Lo0_ADV term ADV_SANE_CUST from route-filter 98.0.0.0/24 orlonger
+set policy-options policy-statement Lo0_ADV term ADV_SANE_CUST then accept
+set policy-options policy-statement Lo0_ADV term inet6 from rib inet6.0
+set policy-options policy-statement Lo0_ADV term inet6 from route-filter ::ffff:10.1.1.6/128 exact
+set policy-options policy-statement Lo0_ADV term inet6 then accept
+set policy-options policy-statement Lo0_ADV term 20 then reject
+set policy-options policy-statement Lo10_ADV term 10 from protocol direct
+set policy-options policy-statement Lo10_ADV term 10 from route-filter 10.10.1.6/32 exact
+set policy-options policy-statement Lo10_ADV term 10 then accept
+set policy-options policy-statement Lo10_ADV term inet6 from rib inet6.0
+set policy-options policy-statement Lo10_ADV term inet6 from route-filter ::ffff:10.1.1.6/128 exact
+set policy-options policy-statement Lo10_ADV term inet6 then accept
+set policy-options policy-statement Lo10_ADV term 20 then reject
+set policy-options policy-statement Lo30_ADV term 10 from protocol direct
+set policy-options policy-statement Lo30_ADV term 10 from route-filter 10.20.1.6/32 exact
+set policy-options policy-statement Lo30_ADV term 10 then accept
+set policy-options policy-statement REC_SANE_DEFAULT term REJECT_ALL then reject
+set policy-options policy-statement SANE-CUST-IMPORT term 10 from community SANE-CUSTOMER
+set policy-options policy-statement SANE-CUST-IMPORT term 10 then accept
+set policy-options policy-statement SANE-CUST-IMPORT term 20 then reject
+set policy-options policy-statement SANE_CUST_EXPORT term 10 then reject
+set policy-options community CL_INTERNET_EDGE_U members 7018:6648
+set policy-options community CL_LEAF_U members 13979:3101
+set policy-options community CL_NM_KNOWN members 7018:7000
+set policy-options community CL_NM_NEW members 7018:7001
+set policy-options community CL_NOADV_CBB members 7018:65002
+set policy-options community CL_NOADV_LocalRouting members 7018:65000
+set policy-options community CL_NOADV_LocalRouting members 7132:251
+set policy-options community CL_PLEAF_ROUTES members 7018:8204
+set policy-options community CL_P_BGP_LU members 7018:6646
+set policy-options community CL_P_BGP_LU members 7018:6649
+set policy-options community CL_P_BGP_LU members 7018:8203
+set policy-options community CL_P_BGP_LU members 7018:3101
+set policy-options community CL_P_BGP_LU members 7018:3104
+set policy-options community CL_TRANSIT_ALL members 7018:8211
+set policy-options community CL_UNICAST members 7018:8202
+set policy-options community CL_UNICAST members 2685:8202
+set policy-options community CL_UNICAST members 2686:8202
+set policy-options community CL_UNICAST members 2687:8202
+set policy-options community SANE-CUSTOMER members target:999:998
+set policy-options community SANE-DEFAULT members target:999:999
+set firewall family inet prefix-action pda-per-destination policer 1Mbps-policer
+set firewall family inet prefix-action pda-per-destination count
+set firewall family inet prefix-action pda-per-destination subnet-prefix-length 24
+set firewall family inet prefix-action pda-per-destination source-prefix-length 32
+set firewall family inet filter PROTECT_HOST term 10 from address 192.167.1.0/24
+set firewall family inet filter PROTECT_HOST term 10 then accept
+set firewall family inet filter PROTECT_HOST term 5000 then reject
+set firewall family inet filter SANE_SERVICE term OFFLOAD-FIN from source-prefix-list NON-BRONZE-CUSTOMERS
+set firewall family inet filter SANE_SERVICE term OFFLOAD-FIN from protocol tcp
+set firewall family inet filter SANE_SERVICE term OFFLOAD-FIN from tcp-flags 0x11
+set firewall family inet filter SANE_SERVICE term OFFLOAD-FIN then count COUNT-FIN
+set firewall family inet filter SANE_SERVICE term OFFLOAD-FIN then next-ip 192.168.1.19/32
+set firewall family inet filter SANE_SERVICE term OFFLOAD-FIN then next-ip routing-instance SANE-CUSTOMER
+set firewall family inet filter SANE_SERVICE term NON-BRONZE from source-prefix-list NON-BRONZE-CUSTOMERS
+set firewall family inet filter SANE_SERVICE term NON-BRONZE then count COUNT-NON-BRONZE
+set firewall family inet filter SANE_SERVICE term NON-BRONZE then next-ip 192.168.1.19/32
+set firewall family inet filter SANE_SERVICE term NON-BRONZE then next-ip routing-instance SANE-CUSTOMER
+set firewall family inet filter SANE_SERVICE term BRONZE-CUSTOMER-EXCEPTION from source-prefix-list BRONZE-EXCEPTION-CUSTOMER
+set firewall family inet filter SANE_SERVICE term BRONZE-CUSTOMER-EXCEPTION then count COUNT-BRONZE-CUSTOMER-EXCEPTION
+set firewall family inet filter SANE_SERVICE term BRONZE-CUSTOMER-EXCEPTION then accept
+set firewall family inet filter SANE_SERVICE term PERMIT-TO-GRT then accept
+set firewall family inet filter SANE_SERVICE_REVERSE term OFFLOAD-FIN from destination-prefix-list NON-BRONZE-CUSTOMERS
+set firewall family inet filter SANE_SERVICE_REVERSE term OFFLOAD-FIN from protocol tcp
+set firewall family inet filter SANE_SERVICE_REVERSE term OFFLOAD-FIN from tcp-flags 0x11
+set firewall family inet filter SANE_SERVICE_REVERSE term OFFLOAD-FIN then count COUNT-REVERSE-FIN
+set firewall family inet filter SANE_SERVICE_REVERSE term OFFLOAD-FIN then next-ip 192.168.1.21/32
+set firewall family inet filter SANE_SERVICE_REVERSE term NON-BRONZE from destination-prefix-list NON-BRONZE-CUSTOMERS
+set firewall family inet filter SANE_SERVICE_REVERSE term NON-BRONZE then count COUNT-NON-BRONZE-REVERSE
+set firewall family inet filter SANE_SERVICE_REVERSE term NON-BRONZE then next-ip 192.168.1.21/32
+set firewall family inet filter SANE_SERVICE_REVERSE term BRONZE-EXCEPTION from destination-prefix-list BRONZE-EXCEPTION-CUSTOMER
+set firewall family inet filter SANE_SERVICE_REVERSE term BRONZE-EXCEPTION then count COUNT-BRONZE-EXCEPTION-REVERSE
+set firewall family inet filter SANE_SERVICE_REVERSE term BRONZE-EXCEPTION then accept
+set firewall family inet filter SANE_SERVICE_REVERSE term COMMON-BLOCK from source-prefix-list COMMON-BLOCK
+deactivate firewall family inet filter SANE_SERVICE_REVERSE term COMMON-BLOCK from source-prefix-list
+set firewall family inet filter SANE_SERVICE_REVERSE term COMMON-BLOCK from destination-prefix-list COMMON-BLOCK
+set firewall family inet filter SANE_SERVICE_REVERSE term COMMON-BLOCK then discard
+set firewall family inet filter SANE_SERVICE_REVERSE term COMMON-BLOCK then prefix-action pda-per-destination
+set firewall family inet filter SANE_SERVICE_REVERSE term ACCEPT-ALL then accept
+set firewall family inet6 filter PROTECT6_HOST term 10 from address de:ad:be:ef:de:ad:be:ef/128
+set firewall policer 1Mbps-policer if-exceeding bandwidth-limit 1m
+set firewall policer 1Mbps-policer if-exceeding burst-size-limit 63k
+set firewall policer 1Mbps-policer then discard
+set routing-instances SANE-CUSTOMER instance-type vrf
+set routing-instances SANE-CUSTOMER interface ge-0/0/2.0
+set routing-instances SANE-CUSTOMER route-distinguisher 990:990
+set routing-instances SANE-CUSTOMER vrf-import SANE-CUST-IMPORT
+set routing-instances SANE-CUSTOMER vrf-export SANE_CUST_EXPORT
+set routing-instances SANE-CUSTOMER vrf-table-label
+set routing-instances SANE-DEFAULT-VRF instance-type vrf
+set routing-instances SANE-DEFAULT-VRF routing-options static route 0.0.0.0/0 next-table inet.0
+set routing-instances SANE-DEFAULT-VRF forwarding-options family inet filter input SANE_SERVICE
+set routing-instances SANE-DEFAULT-VRF route-distinguisher 999:999
+set routing-instances SANE-DEFAULT-VRF vrf-import REC_SANE_DEFAULT
+set routing-instances SANE-DEFAULT-VRF vrf-export ADV_SANE_DEFAULT
+set routing-instances SANE-DEFAULT-VRF vrf-table-label
+set routing-instances TEST-6vPE instance-type vrf
+set routing-instances TEST-6vPE interface lo0.10
+set routing-instances TEST-6vPE route-distinguisher 1111:1110
+set routing-instances TEST-6vPE vrf-target target:1111:1111
+set routing-instances TEST-6vPE vrf-table-label
+set routing-options resolution rib inet.0 resolution-ribs SANE-CUSTOMER.inet.0
+set routing-options resolution rib inet.0 resolution-ribs inet.3
+set routing-options interface-routes rib-group inet LEAK_INTF_INET_INET3
+set routing-options router-id 10.1.1.6
+set routing-options autonomous-system 65531
+set routing-options flow route test match protocol tcp
+set routing-options flow route test match tcp-flags fin
+set routing-options flow route test match destination 98.0.0.1/32
+set routing-options flow route test match source 99.0.0.1/32
+set routing-options flow route test then routing-instance target:999:998
+deactivate routing-options flow
+set routing-options bmp initiation-message router-id:10.1.1.6,autonomous-system:65531
+set routing-options bmp connection-mode active
+set routing-options bmp statistics-timeout 60
+set routing-options bmp station routing-bot local-address 192.167.1.6
+set routing-options bmp station routing-bot route-monitoring loc-rib
+set routing-options bmp station routing-bot route-monitoring pre-policy
+set routing-options bmp station routing-bot route-monitoring rib-out post-policy
+set routing-options bmp station routing-bot station-address 192.168.122.10
+set routing-options bmp station routing-bot station-port 17002
+deactivate routing-options bmp
+set routing-options static route 192.168.122.0/28 next-hop 192.167.1.254
+set routing-options static route 199.1.1.0/30 next-hop 192.167.1.254
+set routing-options static route 199.1.1.0/30 no-readvertise
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INTF_INET_INET3 import-policy LEAK_INTF_INET_INET3
+set routing-options rib-groups LEAK_SANE_CUSTOMER_TO_GRT import-rib SANE-CUSTOMER.inet.0
+set routing-options rib-groups LEAK_SANE_CUSTOMER_TO_GRT import-rib inet.0
+set routing-options rib-groups LEAK_SANE_CUSTOMER_TO_GRT import-policy LEAK_SANE_CUSTOMER
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet.3
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet6.3
+set routing-options programmable-rpd traceoptions file prpd
+set routing-options programmable-rpd traceoptions file size 1g
+set routing-options programmable-rpd traceoptions flag route
+set routing-options programmable-rpd traceoptions flag client
+set routing-options programmable-rpd purge-timeout 1000
+set protocols router-advertisement interface fxp0.0
+set protocols bgp group eBGP-to-core3 type external
+set protocols bgp group eBGP-to-core3 family inet unicast
+set protocols bgp group eBGP-to-core3 export Lo0_ADV
+set protocols bgp group eBGP-to-core3 neighbor 192.169.1.14 local-address 192.169.1.15
+set protocols bgp group eBGP-to-core3 neighbor 192.169.1.14 peer-as 65535
+set protocols bgp group eBGP-to-core3 neighbor 192.169.1.14 local-as 65531
+set protocols bgp group eBGP-to-core3-lu type external
+set protocols bgp group eBGP-to-core3-lu family inet labeled-unicast rib-group LEAK_INET3_INET63
+set protocols bgp group eBGP-to-core3-lu family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-core3-lu family inet6 labeled-unicast rib inet6.3
+deactivate protocols bgp group eBGP-to-core3-lu family inet6
+set protocols bgp group eBGP-to-core3-lu export Lo10_ADV
+set protocols bgp group eBGP-to-core3-lu neighbor 192.170.1.14 local-address 192.170.1.15
+set protocols bgp group eBGP-to-core3-lu neighbor 192.170.1.14 peer-as 65535
+set protocols bgp group eBGP-to-core3-lu neighbor 192.170.1.14 local-as 65531
+set protocols bgp group eBGP-to-core4 type external
+set protocols bgp group eBGP-to-core4 family inet unicast
+set protocols bgp group eBGP-to-core4 export Lo0_ADV
+set protocols bgp group eBGP-to-core4 neighbor 192.169.1.16 local-address 192.169.1.17
+set protocols bgp group eBGP-to-core4 neighbor 192.169.1.16 peer-as 65535
+set protocols bgp group eBGP-to-core4 neighbor 192.169.1.16 local-as 65531
+set protocols bgp group eBGP-to-core4-lu type external
+set protocols bgp group eBGP-to-core4-lu family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-core4-lu family inet6 labeled-unicast rib inet6.3
+set protocols bgp group eBGP-to-core4-lu export Lo10_ADV
+set protocols bgp group eBGP-to-core4-lu neighbor 192.170.1.16 local-address 192.170.1.17
+set protocols bgp group eBGP-to-core4-lu neighbor 192.170.1.16 peer-as 65535
+set protocols bgp group eBGP-to-core4-lu neighbor 192.170.1.16 local-as 65531
+set protocols bgp group L3VPN type internal
+deactivate protocols bgp group L3VPN family inet unicast
+set protocols bgp group L3VPN family inet-vpn unicast
+set protocols bgp group L3VPN family inet6-vpn unicast
+set protocols bgp group L3VPN export CHANGE_NH
+set protocols bgp group L3VPN local-as 65533
+set protocols bgp group L3VPN neighbor 10.1.1.1 local-address 10.1.1.6
+set protocols bgp group L3VPN neighbor 10.1.1.1 import ANALYZER
+set protocols bgp group L3VPN neighbor 10.1.1.1 export DONT_EXPORT_INET
+set protocols bgp group L3VPN vpn-apply-export
+set protocols bgp group eBGP-to-core3-lu-30 type external
+set protocols bgp group eBGP-to-core3-lu-30 family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-core3-lu-30 export Lo30_ADV
+set protocols bgp group eBGP-to-core3-lu-30 neighbor 192.171.1.14 local-address 192.171.1.15
+set protocols bgp group eBGP-to-core3-lu-30 neighbor 192.171.1.14 peer-as 65535
+set protocols bgp group eBGP-to-core3-lu-30 neighbor 192.171.1.14 local-as 65531
+set protocols bgp group eBGP-to-core4-lu-30 family inet labeled-unicast rib inet.3
+set protocols bgp group eBGP-to-core4-lu-30 export Lo30_ADV
+set protocols bgp group eBGP-to-core4-lu-30 neighbor 192.171.1.16 local-address 192.171.1.17
+set protocols bgp group eBGP-to-core4-lu-30 neighbor 192.171.1.16 peer-as 65535
+set protocols bgp group eBGP-to-core4-lu-30 neighbor 192.171.1.16 local-as 65531
+set protocols mpls icmp-tunneling
+set protocols mpls ipv6-tunneling
+set protocols mpls interface all

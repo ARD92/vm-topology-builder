@@ -1,0 +1,244 @@
+
+## Last commit: 2023-02-09 15:58:12 UTC by root
+version 20.4R1.12;
+system {
+    host-name vsrx;
+    root-authentication {
+        encrypted-password "$6$tQ7glN9L$J8MbytDPE0F6TViAuYxxTmjwNWPhTeUUZIOblc6PhsTeyh53Dfznj1406tX3g3SdLaPqaD.YBE.3ZwFqbONYh/"; ## SECRET-DATA
+    }
+    scripts {
+        language python;
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        netconf {
+            ssh;
+        }
+        web-management {
+            http {
+                interface fxp0.0;
+            }
+            https {
+                system-generated-certificate;
+                interface fxp0.0;
+            }
+        }
+    }
+    syslog {
+        file messages {
+            any any;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+    license {
+        autoupdate {
+            url https://ae1.juniper.net/junos/key_retrieval;
+        }
+    }
+}
+security {
+    log {
+        mode stream;
+        source-address 192.171.1.1;
+        stream JETAPP {
+            format sd-syslog;
+            host {
+                192.171.1.2;
+                port 514;
+            }
+            transport {
+                protocol udp;
+            }
+        }
+        file {
+            name session-logger;
+            size 10;
+            files 2;
+        }
+    }
+    flow {
+        tcp-session {
+            rst-invalidate-session;
+            fin-invalidate-session;
+        }
+    }
+    screen {
+        ids-option untrust-screen {
+            icmp {
+                ping-death;
+            }
+            ip {
+                source-route-option;
+                tear-drop;
+            }
+            tcp {
+                syn-flood {
+                    alarm-threshold 1024;
+                    attack-threshold 200;
+                    source-threshold 1024;
+                    destination-threshold 2048;
+                    queue-size 2000; ## Warning: 'queue-size' is deprecated
+                    timeout 20;
+                }
+                land;
+            }
+        }
+    }
+    policies {
+        from-zone trust to-zone trust {
+            policy default-permit {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+        from-zone trust to-zone untrust {
+            policy default-permit {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                    log {
+                        session-init;
+                        session-close;
+                    }
+                }
+            }
+        }
+        from-zone untrust to-zone trust {
+            policy default-permit {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+        }
+        default-policy {
+            permit-all;
+        }
+        pre-id-default-policy {
+            then {
+                log {
+                    session-close;
+                }
+            }
+        }
+    }
+    zones {
+        security-zone trust {
+            tcp-rst;
+            host-inbound-traffic {
+                system-services {
+                    all;
+                }
+                protocols {
+                    all;
+                }
+            }
+            interfaces {
+                ge-0/0/0.0;
+            }
+        }
+        security-zone untrust {
+            screen untrust-screen;
+            host-inbound-traffic {
+                system-services {
+                    all;
+                }
+                protocols {
+                    all;
+                }
+            }
+            interfaces {
+                ge-0/0/1.0;
+                ge-0/0/1.1;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        description trust;
+        unit 0 {
+            family inet {
+                address 192.168.1.19/31;
+            }
+            family inet6 {
+                address ::ffff:192.168.1.19/128;
+            }
+        }
+    }
+    ge-0/0/1 {
+        description untrust;
+        flexible-vlan-tagging;
+        unit 0 {
+            vlan-id 1;
+            family inet {
+                address 192.168.1.21/31;
+            }
+        }
+        unit 1 {
+            description "high speed logging towards jetapp";
+            vlan-id 10;
+            family inet {
+                address 192.171.1.1/30;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 192.167.1.7/24;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement LEAK_TO_INET63 {
+        term 10 {
+            from {
+                route-filter ::ffff:192.168.1.19/128 exact;
+            }
+            then accept;
+        }
+    }
+}
+applications {
+    application TELNET {
+        protocol tcp;
+        inactivity-timeout 4;
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 next-hop 192.168.1.20;
+        route 98.0.0.1/32 next-hop 192.168.1.18;
+    }
+    interface-routes {
+        rib-group inet6 LEAK_TO_INET63;
+    }
+    rib-groups {
+        LEAK_TO_INET63 {
+            import-rib [ inet6.0 inet6.3 ];
+            import-policy LEAK_TO_INET63;
+        }
+    }
+}

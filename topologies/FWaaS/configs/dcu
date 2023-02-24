@@ -1,0 +1,824 @@
+
+## Last commit: 2023-02-24 06:26:23 UTC by root
+version 23.2I-20230127_dev_common.0.1049;
+system {
+    host-name dcu;
+    root-authentication {
+        encrypted-password "$6$AxP1Mh6G$cxB2Mpx.wjvbbWQORyw6og6wnLYBVr9FwJ4BTzQvD/k2aL1Bshf2EV/wA6oKrw8TyHpgF7jSNQPLltNYEkzls0"; ## SECRET-DATA
+    }
+    configuration-database {
+        ephemeral;
+    }
+    scripts {
+        language python3;
+    }
+    login {
+        user aprabh {
+            full-name "Aravind Prabhakar";
+            uid 1000;
+            class super-user;
+            authentication {
+                encrypted-password "$6$WJ201uaU$oDU7y/0PGvtgqFKe2dnub3ZR5qz9v6xd5tkbcDYDxtH9YZ/oUrtbm5NmCAt5Z4em8PPM7LfRcdKtDugkUo24./"; ## SECRET-DATA
+            }
+        }
+        message "*************************************************************************** \n Warning NoticeThis system is restricted solely to AT&T authorized users forlegitimate business purposesonly. The actual or attempted unauthorized access, use, or modification of this system is strictly prohibited by AT&T. Unauthorized users are subject to Company disciplinary proceedings and/or disciplinary proceedings and/orapplicable domestic and foreign laws The use of this system may be monitored and recorded for administrative and security reasons Anyone accessing this system expressly consents to such monitoring and is advised that if monitoring reveals possible evidence of criminal activity, AT&T may provide the evidence of such activity to law enforcement officials. All users must comply with AT&T company policies regarding the protection of AT&T information assets \n ************************************************************************* ";
+    }
+    services {
+        ssh {
+            root-login allow;
+        }
+        telnet;
+        extension-service {
+            request-response {
+                grpc {
+                    clear-text {
+                        address 0.0.0.0;
+                        port 50051;
+                    }
+                    max-connections 8;
+                }
+            }
+            notification {
+                port 1883;
+                allow-clients {
+                    address 0.0.0.0/0;
+                }
+            }
+            traceoptions {
+                file grpc.log size 10m;
+                flag grpc;
+            }
+        }
+        netconf {
+            ssh;
+            traceoptions {
+                file netconf.log size 10m;
+                flag all;
+            }
+        }
+    }
+    syslog {
+        archive size 75535 files 4;
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        console {
+            any info;
+            interactive-commands info;
+        }
+    }
+    extensions {
+        extension-service {
+            application {
+                file route-leak.py {
+                    arguments "-nhip 98.98.98.98 -comm 9191:9191";
+                    daemonize;
+                    username root;
+                }
+            }
+        }
+    }
+    processes {
+        dhcp-service {
+            traceoptions {
+                file dhcp_logfile size 10m;
+                level all;
+                flag packet;
+            }
+        }
+    }
+}
+chassis {
+    aggregated-devices {
+        ethernet {
+            device-count 10;
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        description "to core3";
+        gigether-options {
+            802.3ad ae0;
+        }
+        inactive: unit 0 {
+            family inet {
+                address 192.168.1.16/31;
+            }
+        }
+    }
+    ge-0/0/1 {
+        disable;
+        flexible-vlan-tagging;
+        native-vlan-id 1;
+        unit 0 {
+            vlan-id 1;
+            family inet {
+                address 192.168.1.17/31;
+            }
+        }
+        unit 1 {
+            vlan-id 10;
+            family inet {
+                filter {
+                    input SANE_SERVICE_REVERSE;
+                }
+                address 192.169.1.17/31;
+            }
+            family inet6 {
+                address ::ffff:192.169.1.17/126;
+            }
+        }
+        unit 2 {
+            vlan-id 20;
+            family inet {
+                address 192.170.1.17/31;
+            }
+            family mpls;
+        }
+        unit 3 {
+            vlan-id 30;
+            family inet {
+                address 192.171.1.17/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        description "vsrx trust intf";
+        unit 0 {
+            family inet {
+                address 192.168.1.18/31;
+            }
+        }
+    }
+    ge-0/0/3 {
+        description "vsrx untrust intf";
+        flexible-vlan-tagging;
+        unit 0 {
+            vlan-id 1;
+            family inet {
+                address 192.168.1.20/31;
+            }
+        }
+    }
+    ae0 {
+        flexible-vlan-tagging;
+        native-vlan-id 1;
+        mtu 9160;
+        inactive: aggregated-ether-options {
+            bfd-liveness-detection {
+                minimum-interval 100;
+                multiplier 3;
+                neighbor 192.168.1.14;
+                local-address 192.168.1.15;
+            }
+            inactive: lacp {
+                hold-time up 6000;
+            }
+        }
+        unit 0 {
+            vlan-id 1;
+            family inet {
+                address 192.168.1.15/31;
+            }
+        }
+        unit 1 {
+            description BGP-U;
+            vlan-id 10;
+            family inet {
+                filter {
+                    input SANE_SERVICE_REVERSE;
+                }
+                address 192.169.1.15/31;
+            }
+            family inet6 {
+                address ::ffff:192.169.1.15/126;
+            }
+        }
+        unit 2 {
+            description BGP-LU;
+            vlan-id 20;
+            family inet {
+                address 192.170.1.15/31;
+            }
+            family inet6 {
+                address ::ffff:192.170.1.15/127;
+            }
+            family mpls;
+        }
+        unit 3 {
+            description BGP-LU;
+            vlan-id 30;
+            family inet {
+                address 192.171.1.15/31;
+            }
+            family mpls;
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 192.167.1.6/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.1.1.6/32;
+                address 10.10.1.6/32;
+                address 10.20.1.6/32;
+            }
+            family inet6 {
+                address ::ffff:10.10.1.6/128;
+            }
+        }
+        unit 10 {
+            family inet6 {
+                address ::ffff:101.101.102.102/128;
+                address 2001::20/128;
+            }
+        }
+    }
+}
+policy-options {
+    prefix-list BRONZE-EXCEPTION-CUSTOMER {
+        98.0.0.2/32;
+    }
+    prefix-list COMMON-BLOCK {
+        99.99.99.99/32;
+    }
+    prefix-list DEST-PREFIX-OFFLOAD;
+    prefix-list NON-BRONZE-CUSTOMERS {
+        98.0.0.1/32;
+    }
+    prefix-list PL_DEFAULT_V6;
+    prefix-list PL_LARGE_SUBNETS_V4;
+    prefix-list PL_LEAF_CONNECTED_INFRA_V4;
+    prefix-list PL_LEAF_CONNECTED_INFRA_V6;
+    prefix-list PL_LEAF_LB0_V4;
+    prefix-list PL_LEAF_LB0_V6;
+    prefix-list PL_LEAF_LB10_V4;
+    prefix-list PL_MARTIANS_V4;
+    prefix-list PL_MARTIANS_V6;
+    prefix-list PL_PRIVATE_V4;
+    prefix-list PL_PRIVATE_V6;
+    prefix-list SANE-CUSTOMER {
+        98.0.0.1/32;
+    }
+    prefix-list SOURCE-PREFIX-OFFLOAD;
+    prefix-list SOURCE-PREFIX-OFFLOAD2;
+    policy-statement ADV_SANE_DEFAULT {
+        term 10 {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then {
+                community add SANE-DEFAULT;
+                accept;
+            }
+        }
+    }
+    policy-statement ANALYZER {
+        term 20 {
+            then {
+                analyze;
+                accept;
+            }
+        }
+    }
+    policy-statement CHANGE_NH {
+        term 10 {
+            then {
+                next-hop 10.10.1.6;
+                accept;
+            }
+        }
+    }
+    policy-statement DONT_EXPORT_INET {
+        term 10 {
+            from rib inet.0;
+            then reject;
+        }
+        term 20 {
+            then {
+                next-hop 10.10.1.6;
+                accept;
+            }
+        }
+    }
+    policy-statement EXPORT_SANE_CUSTOMER {
+        term 10 {
+            from {
+                route-filter 98.0.0.1/32 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement LEAK_INET_INET3 {
+        term 10 {
+            from {
+                protocol bgp;
+                route-filter 10.1.1.1/32 exact;
+                route-filter 10.10.1.1/32 exact;
+            }
+        }
+    }
+    policy-statement LEAK_INTF_INET6_INET63 {
+        term 10 {
+            from {
+                route-filter ::ffff:10.10.1.6/128 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement LEAK_INTF_INET_INET3 {
+        term 10 {
+            from {
+                route-filter 10.10.1.6/32 exact;
+                route-filter 10.20.1.6/32 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement LEAK_SANE_CUSTOMER {
+        term 10 {
+            from {
+                route-filter 98.0.0.1/32 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement Lo0_ADV {
+        term 10 {
+            from {
+                protocol direct;
+                route-filter 10.1.1.6/32 exact;
+            }
+            then accept;
+        }
+        term ADV_SANE_CUST {
+            from {
+                route-filter 98.0.0.1/32 exact;
+                route-filter 98.0.0.0/24 orlonger;
+            }
+            then accept;
+        }
+        term inet6 {
+            from {
+                rib inet6.0;
+                route-filter ::ffff:10.1.1.6/128 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement Lo10_ADV {
+        term 10 {
+            from {
+                protocol direct;
+                route-filter 10.10.1.6/32 exact;
+            }
+            then accept;
+        }
+        term inet6 {
+            from {
+                rib inet6.0;
+                route-filter ::ffff:10.1.1.6/128 exact;
+            }
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement Lo30_ADV {
+        term 10 {
+            from {
+                protocol direct;
+                route-filter 10.20.1.6/32 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement REC_SANE_DEFAULT {
+        term REJECT_ALL {
+            then reject;
+        }
+    }
+    policy-statement SANE-CUST-IMPORT {
+        term 10 {
+            from community SANE-CUSTOMER;
+            then accept;
+        }
+        term 20 {
+            then reject;
+        }
+    }
+    policy-statement SANE_CUST_EXPORT {
+        term 10 {
+            then reject;
+        }
+    }
+    community CL_INTERNET_EDGE_U members 7018:6648;
+    community CL_LEAF_U members 13979:3101;
+    community CL_NM_KNOWN members 7018:7000;
+    community CL_NM_NEW members 7018:7001;
+    community CL_NOADV_CBB members 7018:65002;
+    community CL_NOADV_LocalRouting members [ 7018:65000 7132:251 ];
+    community CL_PLEAF_ROUTES members 7018:8204;
+    community CL_P_BGP_LU members [ 7018:6646 7018:6649 7018:8203 7018:3101 7018:3104 ];
+    community CL_TRANSIT_ALL members 7018:8211;
+    community CL_UNICAST members [ 7018:8202 2685:8202 2686:8202 2687:8202 ];
+    community SANE-CUSTOMER members target:999:998;
+    community SANE-DEFAULT members target:999:999;
+}
+firewall {
+    family inet {
+        prefix-action pda-per-destination {
+            policer 1Mbps-policer;
+            count;
+            subnet-prefix-length 24;
+            source-prefix-length 32;
+        }
+        filter PROTECT_HOST {
+            term 10 {
+                from {
+                    address {
+                        192.167.1.0/24;
+                    }
+                }
+                then accept;
+            }
+            term 5000 {
+                then {
+                    reject;
+                }
+            }
+        }
+        filter SANE_SERVICE {
+            term OFFLOAD-FIN {
+                from {
+                    source-prefix-list {
+                        NON-BRONZE-CUSTOMERS;
+                    }
+                    protocol tcp;
+                    tcp-flags 0x11;
+                }
+                then {
+                    count COUNT-FIN;
+                    next-ip 192.168.1.19/32 routing-instance SANE-CUSTOMER;
+                }
+            }
+            term NON-BRONZE {
+                from {
+                    source-prefix-list {
+                        NON-BRONZE-CUSTOMERS;
+                    }
+                }
+                then {
+                    count COUNT-NON-BRONZE;
+                    next-ip 192.168.1.19/32 routing-instance SANE-CUSTOMER;
+                }
+            }
+            term BRONZE-CUSTOMER-EXCEPTION {
+                from {
+                    source-prefix-list {
+                        BRONZE-EXCEPTION-CUSTOMER;
+                    }
+                }
+                then {
+                    count COUNT-BRONZE-CUSTOMER-EXCEPTION;
+                    accept;
+                }
+            }
+            term PERMIT-TO-GRT {
+                then accept;
+            }
+        }
+        filter SANE_SERVICE_REVERSE {
+            term OFFLOAD-FIN {
+                from {
+                    destination-prefix-list {
+                        NON-BRONZE-CUSTOMERS;
+                    }
+                    protocol tcp;
+                    tcp-flags 0x11;
+                }
+                then {
+                    count COUNT-REVERSE-FIN;
+                    next-ip 192.168.1.21/32;
+                }
+            }
+            term NON-BRONZE {
+                from {
+                    destination-prefix-list {
+                        NON-BRONZE-CUSTOMERS;
+                    }
+                }
+                then {
+                    count COUNT-NON-BRONZE-REVERSE;
+                    next-ip 192.168.1.21/32;
+                }
+            }
+            term BRONZE-EXCEPTION {
+                from {
+                    destination-prefix-list {
+                        BRONZE-EXCEPTION-CUSTOMER;
+                    }
+                }
+                then {
+                    count COUNT-BRONZE-EXCEPTION-REVERSE;
+                    accept;
+                }
+            }
+            term COMMON-BLOCK {
+                from {
+                    inactive: source-prefix-list {
+                        COMMON-BLOCK;
+                    }
+                    destination-prefix-list {
+                        COMMON-BLOCK;
+                    }
+                }
+                then {
+                    discard;
+                    prefix-action pda-per-destination;
+                }
+            }
+            term ACCEPT-ALL {
+                then accept;
+            }
+        }
+    }
+    family inet6 {
+        filter PROTECT6_HOST {
+            term 10 {
+                from {
+                    address {
+                        de:ad:be:ef:de:ad:be:ef/128;
+                    }
+                }
+            }
+        }
+    }
+    policer 1Mbps-policer {
+        if-exceeding {
+            bandwidth-limit 1m;
+            burst-size-limit 63k;
+        }
+        then discard;
+    }
+}
+routing-instances {
+    SANE-CUSTOMER {
+        instance-type vrf;
+        interface ge-0/0/2.0;
+        route-distinguisher 990:990;
+        vrf-import SANE-CUST-IMPORT;
+        vrf-export SANE_CUST_EXPORT;
+        vrf-table-label;
+    }
+    SANE-DEFAULT-VRF {
+        instance-type vrf;
+        routing-options {
+            static {
+                route 0.0.0.0/0 next-table inet.0;
+            }
+        }
+        forwarding-options {
+            family inet {
+                filter {
+                    input SANE_SERVICE;
+                }
+            }
+        }
+        route-distinguisher 999:999;
+        vrf-import REC_SANE_DEFAULT;
+        vrf-export ADV_SANE_DEFAULT;
+        vrf-table-label;
+    }
+    TEST-6vPE {
+        instance-type vrf;
+        interface lo0.10;
+        route-distinguisher 1111:1110;
+        vrf-target target:1111:1111;
+        vrf-table-label;
+    }
+}
+routing-options {
+    resolution {
+        rib inet.0 {
+            resolution-ribs [ SANE-CUSTOMER.inet.0 inet.3 ];
+        }
+    }
+    interface-routes {
+        rib-group inet LEAK_INTF_INET_INET3;
+    }
+    router-id 10.1.1.6;
+    autonomous-system 65531;
+    inactive: flow {
+        route test {
+            match {
+                protocol tcp;
+                tcp-flags fin;
+                destination 98.0.0.1/32;
+                source 99.0.0.1/32;
+            }
+            then routing-instance target:999:998;
+        }
+    }
+    inactive: bmp {
+        initiation-message router-id:10.1.1.6,autonomous-system:65531;
+        connection-mode active;
+        statistics-timeout 60;
+        station routing-bot {
+            local-address 192.167.1.6;
+            route-monitoring {
+                loc-rib;
+                pre-policy;
+                rib-out post-policy;
+            }
+            station-address 192.168.122.10;
+            station-port 17002;
+        }
+    }
+    static {
+        route 192.168.122.0/28 next-hop 192.167.1.254;
+        route 199.1.1.0/30 {
+            next-hop 192.167.1.254;
+            no-readvertise;
+        }
+    }
+    rib-groups {
+        LEAK_INTF_INET_INET3 {
+            import-rib [ inet.0 inet.3 ];
+            import-policy LEAK_INTF_INET_INET3;
+        }
+        LEAK_SANE_CUSTOMER_TO_GRT {
+            import-rib [ SANE-CUSTOMER.inet.0 inet.0 ];
+            import-policy LEAK_SANE_CUSTOMER;
+        }
+        LEAK_INET3_INET63 {
+            import-rib [ inet.3 inet6.3 ];
+        }
+    }
+    programmable-rpd {
+        traceoptions {
+            file prpd size 1g;
+            flag route;
+            flag client;
+        }
+        purge-timeout 1000;
+    }
+}
+protocols {
+    router-advertisement {
+        interface fxp0.0;
+    }
+    bgp {
+        group eBGP-to-core3 {
+            type external;
+            family inet {
+                unicast;
+            }
+            export Lo0_ADV;
+            neighbor 192.169.1.14 {
+                local-address 192.169.1.15;
+                peer-as 65535;
+                local-as 65531;
+            }
+        }
+        group eBGP-to-core3-lu {
+            type external;
+            family inet {
+                labeled-unicast {
+                    rib-group LEAK_INET3_INET63;
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            inactive: family inet6 {
+                labeled-unicast {
+                    rib {
+                        inet6.3;
+                    }
+                }
+            }
+            export Lo10_ADV;
+            neighbor 192.170.1.14 {
+                local-address 192.170.1.15;
+                peer-as 65535;
+                local-as 65531;
+            }
+        }
+        group eBGP-to-core4 {
+            type external;
+            family inet {
+                unicast;
+            }
+            export Lo0_ADV;
+            neighbor 192.169.1.16 {
+                local-address 192.169.1.17;
+                peer-as 65535;
+                local-as 65531;
+            }
+        }
+        group eBGP-to-core4-lu {
+            type external;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            family inet6 {
+                labeled-unicast {
+                    rib {
+                        inet6.3;
+                    }
+                }
+            }
+            export Lo10_ADV;
+            neighbor 192.170.1.16 {
+                local-address 192.170.1.17;
+                peer-as 65535;
+                local-as 65531;
+            }
+        }
+        group L3VPN {
+            type internal;
+            family inet {
+                inactive: unicast;
+            }
+            family inet-vpn {
+                unicast;
+            }
+            family inet6-vpn {
+                unicast;
+            }
+            export CHANGE_NH;
+            local-as 65533;
+            neighbor 10.1.1.1 {
+                local-address 10.1.1.6;
+                import ANALYZER;
+                export DONT_EXPORT_INET;
+            }
+            vpn-apply-export;
+        }
+        group eBGP-to-core3-lu-30 {
+            type external;
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export Lo30_ADV;
+            neighbor 192.171.1.14 {
+                local-address 192.171.1.15;
+                peer-as 65535;
+                local-as 65531;
+            }
+        }
+        group eBGP-to-core4-lu-30 {
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export Lo30_ADV;
+            neighbor 192.171.1.16 {
+                local-address 192.171.1.17;
+                peer-as 65535;
+                local-as 65531;
+            }
+        }
+    }
+    mpls {
+        icmp-tunneling;
+        ipv6-tunneling;
+        interface all;
+    }
+}

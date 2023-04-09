@@ -1,0 +1,37 @@
+set interfaces ge-0/0/0 unit 0 family inet address 172.1.1.2/30
+set interfaces ge-0/0/0 unit 0 family inet6 address ::ffff:172.1.1.2/126
+set interfaces ge-0/0/0 unit 0 family mpls
+set interfaces ge-0/0/1 unit 0 family inet address 172.1.2.2/30
+set interfaces ge-0/0/1 unit 0 family mpls
+
+set interfaces lo0 unit 0 family inet address 2.2.2.2/32
+
+set protocols mpls ipv6-tunneling
+set protocols mpls interface ge-0/0/0.0
+set protocols mpls interface ge-0/0/1.0
+
+set protocols bgp group MP-IBGP type internal
+set protocols bgp group MP-IBGP family inet unicast
+set protocols bgp group MP-IBGP family inet-vpn unicast
+set protocols bgp group MP-IBGP family inet6-vpn unicast
+set protocols bgp group MP-IBGP export NH-SELF
+set protocols bgp group MP-IBGP cluster 2.2.2.2
+set protocols bgp group MP-IBGP neighbor 172.1.1.1 local-address 172.1.1.2
+set protocols bgp group MP-IBGP neighbor 172.1.2.1 local-address 172.1.2.2
+
+set routing-options rib inet.3 static route 172.1.1.1/32 next-hop 172.1.1.1
+set routing-options rib inet.3 static route 172.1.2.1/32 next-hop 172.1.2.1
+
+set routing-options interface-routes rib-group inet LEAK_INET_INET3
+set routing-options interface-routes rib-group inet3 LEAK_INET3_INET63
+
+set routing-options autonomous-system 65000
+
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INET_INET3 import-policy LEAK_INET_INET3
+
+set routing-options rib-groups LEAK_INET6_INET63 import-rib inet6.0
+set routing-options rib-groups LEAK_INET6_INET63 import-rib inet6.3
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet.3
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet6.3

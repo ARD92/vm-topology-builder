@@ -1,0 +1,23 @@
+set interfaces ge-0/0/0 unit 0 family inet address 172.1.3.2/30
+set interfaces ge-0/0/0 unit 0 family mpls
+
+set interfaces lo0 unit 2 family inet address 22.1.2.1/32
+set interfaces lo0 unit 2 family inet6 address 2001::4/128
+
+set protocols mpls interface ge-0/0/0.0
+
+set security forwarding-options family mpls mode flow-based
+
+set routing-instances CUST-V4 instance-type vrf
+set routing-instances CUST-V4 interface lo0.2
+set routing-instances CUST-V4 route-distinguisher 200:200
+set routing-instances CUST-V4 vrf-target target:200:200
+set routing-instances CUST-V4 vrf-table-label
+
+set protocols bgp group MP-IBGP type internal
+set protocols bgp group MP-IBGP family inet unicast
+set protocols bgp group MP-IBGP family inet-vpn unicast
+set protocols bgp group MP-IBGP family inet6-vpn unicast
+set protocols bgp group MP-IBGP cluster 4.4.4.4
+set protocols bgp group MP-IBGP neighbor 172.1.3.1 local-address 172.1.3.2
+set protocols mpls interface ge-0/0/0.0

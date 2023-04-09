@@ -1,0 +1,32 @@
+set protocols bgp group MP-IBGP type internal
+set protocols bgp group MP-IBGP family inet unicast
+set protocols bgp group MP-IBGP family inet-vpn unicast
+set protocols bgp group MP-IBGP family inet6-vpn unicast
+set protocols bgp group MP-IBGP export NH_SELF
+set protocols bgp group MP-IBGP cluster 1.1.1.1
+set protocols bgp group MP-IBGP neighbor 172.1.1.2 local-address 172.1.1.1
+
+set interfaces ge-0/0/0 unit 0 family inet address 172.1.1.1/30
+set interfaces ge-0/0/0 unit 0 family mpls
+
+set protocols mpls interface ge-0/0/0.0
+
+set routing-instances CUST-V4 instance-type vrf
+set routing-instances CUST-V4 interface lo0.2
+set routing-instances CUST-V4 route-distinguisher 200:200
+set routing-instances CUST-V4 vrf-target target:200:200
+set routing-instances CUST-V4 vrf-table-label
+
+set interfaces lo0 unit 2 family inet address 22.1.1.1/32
+set interfaces lo0 unit 2 family inet6 address 2001::1/128
+
+set routing-options rib inet.3 static rib-group LEAK_INET3_INET63
+set routing-options rib inet.3 static route 172.1.1.2/32 next-hop 172.1.1.2
+set routing-options interface-routes rib-group inet LEAK_INET_INET3
+set routing-options autonomous-system 65000
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.0
+set routing-options rib-groups LEAK_INET_INET3 import-rib inet.3
+set routing-options rib-groups LEAK_INET_INET3 import-policy LEAK_INET_INET3
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet.3
+set routing-options rib-groups LEAK_INET3_INET63 import-rib inet6.3
+

@@ -3,7 +3,7 @@ __Author__ : Aravind Prabhakar
 Description: native go implementation of vNF topology builder. vMX/vSRX/vQFX can be used.
 This is for functional testing purposes. The topology will be built on the same compute only.
 
-version:  2.0
+version:  2.2
 */
 
 package main
@@ -83,7 +83,9 @@ type Nodes struct {
 	Network_nodes []Node `yaml:"network_nodes"`
 }
 
-/* Read XM template
+/*
+	Read XM template
+
 Currently not used.
 */
 func Readtemplate(file string) string {
@@ -274,11 +276,14 @@ func DeleteBridges(node Nodes) {
 	}
 }
 
-/* Func start and stop Domains
+/*
+	Func start and stop Domains
+
 - start domain (action create)
 - stop domain (action delete)
 
-/* Function to create new device disk to append into array devices list */
+/* Function to create new device disk to append into array devices list
+*/
 func NewDisk(path string, imgtype string, dev string, bus string, name string, slot uint) libvirtxml.DomainDisk {
 	var val uint = 0
 	if bus == "virtio" {
@@ -328,7 +333,9 @@ func NewDisk(path string, imgtype string, dev string, bus string, name string, s
 	}
 }
 
-/* Function to create new USB type controller to append into array devices
+/*
+	Function to create new USB type controller to append into array devices
+
 Since there is no way to pass null uint , defined the first arg which need to
 be null as 999. Once this is encounterd, the below template kicks in
 which has the Address parameters removed
@@ -476,7 +483,9 @@ func Videos(ram uint, vram uint, vgamem uint, alias string,
 	}
 }
 
-/* Function to create new interfaces based on link mentioned in topology.yaml
+/*
+	Function to create new interfaces based on link mentioned in topology.yaml
+
 Since the revenue interfaces dont have the Address params, using a flag type to
 determine whether the template for DomainAddress is needed or not.
 when Domain address not needed, pass 999 to pcidomain and other params. only PCI
@@ -868,7 +877,9 @@ func TemplateLinux(node Node, devid int) *libvirtxml.Domain {
 	return domcfg
 }
 
-/* Pass struct to function to handle topo spin up
+/*
+	Pass struct to function to handle topo spin up
+
 Generate domain xml, define and start
 */
 func Genxml(node Nodes) {
@@ -973,7 +984,9 @@ func WriteToFile(name string, path string, data string) {
 	}
 }
 
-/* Function to copy images to build directory
+/*
+	Function to copy images to build directory
+
 Pass pointer to function and modify the source Image path
 under node.Re_ImagePath and node.Pfe_ImagePath
 */

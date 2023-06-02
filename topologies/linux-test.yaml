@@ -1,0 +1,22 @@
+---
+network_nodes:
+  - 
+    name: "lnx1"
+    imagePath: "/home/aprabh/ubuntu_images/"
+    reImage: "ubuntu-20.04-server-cloudimg-amd64.img"
+    pfeImage: ""
+    vnfType: "linux"
+    re_memory: 4096
+    pfe_memory: 
+    re_cores: 2
+    pfe_cores: 
+    re_vcpu: 2
+    pfe_vcpu: 
+    re_port: 9999
+    pfe_port: 
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "linux_test"
+        intf: "enp3-lnx1"
+        peerintf: "enp3-lnx2"
+

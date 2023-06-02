@@ -1,0 +1,193 @@
+---
+network_nodes:
+  - 
+    name: "core1"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8610
+    pfe_port: 8620
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "core1_core2"
+        intf: "ge-0.0.0-core1"
+        peerintf: "ge-0.0.0-core2"
+      - name: "core1_adi"
+        intf: "ge-0.0.1-core1"
+        peerintf: "ge-0.0.0-adi"
+      - name: "core1_core3"
+        intf: "ge-0.0.2-core1"
+        peerintf: "ge-0.0.0-core3"
+  - 
+    name: "core2"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8611
+    pfe_port: 8621
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "core1_core2"
+        intf: "ge-0.0.0-core2"
+        peerintf: "ge-0.0.0-core1"
+      - name: "core2_adi"
+        intf: "ge-0.0.1-core2"
+        peerintf: "ge-0.0.1-adi"
+      - name: "core2_core4"
+        intf: "ge-0.0.2-core2"
+        peerintf: "ge-0.0.0-core4"
+      - name: "core2_core3"
+        intf: "ge-0.0.3-core2"
+        peerintf: "ge-0.0.1-core1"
+  - 
+    name: "core3"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8612
+    pfe_port: 8622
+    link: 
+     - name: "core1_core3"
+       intf: "ge-0.0.0-core3"
+       peerintf: "ge-0.0.2-core1"
+     - name: "core2_core3"
+       intf: "ge-0.0.1-core3"
+       peerintf: "ge-0.0.3-core2"
+     - name: "core3_core4"
+       intf: "ge-0.0.2-core3"
+       peerintf: "ge-0.0.2-core4"
+     - name: "core3_dcu"
+       intf: "ge-0.0.3-core3"
+       peerintf: "ge-0.0.0-dcu"
+  - 
+    name: "core4"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8613
+    pfe_port: 8623
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "core2_core4"
+        intf: "ge-0.0.0-core4"
+        peerintf: "ge-0.0.2-core2"
+      - name: "core3_core4"
+        intf: "ge-0.0.1-core4"
+        peerintf: "ge-0.0.2-core3"
+      - name: "core4_dcu"
+        intf: "ge-0.0.2-core4"
+        peerintf: "ge-0.0.1-dcu"
+  - 
+    name: "adi"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8614
+    pfe_port: 8624
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "core2_adi"
+        intf: "ge-0.0.0-adi"
+        peerintf: "ge-0.0.1-core2"
+      - name: "core1_adi"
+        intf: "ge-0.0.1-adi"
+        peerintf: "ge-0.0.1-core1"
+  - 
+    name: "dcu"
+    imagePath: "/home/aprabh/vmx_images/21.3/"
+    reImage: "junos-vmx-x86-64-21.3R1.6.qcow2"
+    pfeImage: "vFPC-20210810.img"
+    metadataImage: "metadata-usb-re.img" 
+    vhddImage: "vmxhdd.img" 
+    vnfType: "vmx"
+    re_memory: 1024
+    pfe_memory: 4096
+    re_cores: 1
+    pfe_cores: 4
+    re_vcpu: 1
+    pfe_vcpu: 4
+    re_port: 8615
+    pfe_port: 8625
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "core3_dcu"
+        intf: "ge-0.0.0-dcu"
+        peerintf: "ge-0.0.3-core3"
+      - name: "core4_dcu"
+        intf: "ge-0.0.1-dcu"
+        peerintf: "ge-0.0.2-core4"
+      - name: "dcu_vsrx"
+        intf: "ge-0.0.2-dcu"
+        peerintf: "ge-0.0.0-vsrx"
+      - name: "dcu_vsrx"
+        intf: "ge-0.0.3-dcu"
+        peerintf: "ge-0.0.1-vsrx"
+  - 
+    name: "vsrx"
+    imagePath: "/home/aprabh/vsrx_images/"
+    reImage: "junos-vsrx3-x86-64-20.4R1.12.qcow"
+    pfeImage: ""
+    metadataImage: "" 
+    vhddImage: "" 
+    vnfType: "vsrx"
+    re_memory: 4096
+    pfe_memory: 
+    re_cores: 4
+    pfe_cores: 
+    re_vcpu: 4
+    pfe_vcpu: 
+    re_port: 8616
+    pfe_port: 8626
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "dcu_vsrx"
+        intf: "ge-0.0.0-vsrx"
+        peerintf: "ge-0.0.2-dcu"
+      - name: "dcu_vsrx"
+        intf: "ge-0.0.1-vsrx"
+        peerintf: "ge-0.0.3-dcu"

@@ -1,0 +1,62 @@
+---
+network_nodes:
+  - 
+    name: "jcnr1"
+    imagePath: "/home/aprabh/ubuntu_images/"
+    reImage: "ubuntu-20.04-server-cloudimg-amd64.img"
+    pfeImage: ""
+    vnfType: "linux"
+    re_memory: 4096
+    pfe_memory: 
+    re_cores: 4
+    pfe_cores: 
+    re_vcpu: 4
+    pfe_vcpu: 
+    re_port: 9997
+    pfe_port: 
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "jcnr1_jcnr2"
+        intf: "jcnr11"
+        peerintf: "jcnr21"
+  - 
+    name: "jcnr2"
+    imagePath: "/home/aprabh/ubuntu_images/"
+    reImage: "ubuntu-20.04-server-cloudimg-amd64.img"
+    pfeImage: ""
+    vnfType: "linux"
+    re_memory: 8196
+    pfe_memory: 
+    re_cores: 6
+    pfe_cores: 
+    re_vcpu: 6
+    pfe_vcpu: 
+    re_port: 9998
+    pfe_port: 
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "jcnr1_jcnr2"
+        intf: "jcnr21"
+        peerintf: "jcnr11"
+      - name: "jcnr2_jcnr3"
+        intf: "jcnr22"
+        peerintf: "jcnr31"
+  - 
+    name: "jcnr3"
+    imagePath: "/home/aprabh/ubuntu_images/"
+    reImage: "ubuntu-20.04-server-cloudimg-amd64.img"
+    pfeImage: ""
+    vnfType: "linux"
+    re_memory: 4096
+    pfe_memory: 
+    re_cores: 4
+    pfe_cores: 
+    re_vcpu: 4
+    pfe_vcpu: 
+    re_port: 9999
+    pfe_port: 
+    link: 
+      # name is user defined. This will be used to create the bridge name
+      - name: "jcnr2_jcnr3"
+        intf: "jcnr31"
+        peerintf: "jcnr22"
